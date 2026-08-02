@@ -8,12 +8,12 @@ export default function Sidebar({
   setSidebarOpen
 }) {
   const navItems = [
-    { id: 'read', label: 'Read', icon: 'ti-book-2' },
-    { id: 'beyond', label: 'Beyond canon', icon: 'ti-scroll' },
-    { id: 'diagrams', label: 'Diagrams', icon: 'ti-sitemap' },
-    { id: 'plans', label: 'Reading plans', icon: 'ti-calendar' },
-    { id: 'notes', label: 'Notes', icon: 'ti-notes' },
-    { id: 'search', label: 'Search', icon: 'ti-search' }
+    { id: 'read', label: 'Scripture Reader', icon: 'ti-book-2' },
+    { id: 'beyond', label: 'Beyond Canon', icon: 'ti-scroll' },
+    { id: 'diagrams', label: 'Visual Diagrams', icon: 'ti-sitemap' },
+    { id: 'plans', label: 'Reading Plans', icon: 'ti-calendar' },
+    { id: 'notes', label: 'Journal & Notes', icon: 'ti-notes' },
+    { id: 'search', label: 'Search Scripture', icon: 'ti-search' }
   ];
 
   const handleSelectTab = (id) => {
@@ -23,21 +23,46 @@ export default function Sidebar({
 
   return (
     <nav class={`sidebar ${sidebarOpen ? 'open' : ''}`}>
-      <div class="nav-group">
-        <div class="nav-label">Study</div>
-        {navItems.map((item) => (
-          <button
-            key={item.id}
-            class={`nav-item ${activeTab === item.id ? 'active' : ''}`}
-            onClick={() => handleSelectTab(item.id)}
-          >
-            <i class={`ti ${item.icon}`}></i>
-            {item.label}
-          </button>
-        ))}
-        <div class="canon-note">viewing: {tradition} lens</div>
+      <div>
+        {/* Sidebar Brand Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px 18px', borderBottom: '1px solid var(--line)', marginBottom: '14px' }}>
+          <img src="/berea_logo.png" alt="Berea Logo" style={{ width: '28px', height: '28px', borderRadius: '6px', border: '1px solid var(--line-strong)' }} />
+          <span style={{ fontFamily: 'var(--font-display)', fontSize: '18px', fontWeight: 600, color: 'var(--ink)' }}>
+            Berea
+          </span>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-label">Study Workspace</div>
+          {navItems.map((item) => (
+            <button
+              key={item.id}
+              class={`nav-item ${activeTab === item.id ? 'active' : ''}`}
+              onClick={() => handleSelectTab(item.id)}
+            >
+              <i class={`ti ${item.icon}`}></i>
+              {item.label}
+            </button>
+          ))}
+
+          {/* Tradition Lens Info Card */}
+          <div style={{ marginTop: '16px', background: 'var(--parchment-deep)', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--line)' }}>
+            <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--gold)', fontWeight: 700 }}>
+              Active Tradition
+            </div>
+            <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)', marginTop: '2px' }}>
+              📜 {tradition} Canon
+            </div>
+          </div>
+        </div>
       </div>
+
       <div class="nav-group">
+        {/* Streak Badge */}
+        <div style={{ background: 'rgba(184, 134, 59, 0.12)', border: '1px solid rgba(184, 134, 59, 0.3)', padding: '8px 12px', borderRadius: '8px', marginBottom: '10px', fontSize: '12px', color: 'var(--gold)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+          🔥 7-Day Study Streak
+        </div>
+
         <button class="nav-item" onClick={() => handleSelectTab('settings')}>
           <i class="ti ti-settings"></i>Settings
         </button>

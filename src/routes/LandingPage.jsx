@@ -95,7 +95,7 @@ const FAQS = [
   }
 ];
 
-export default function LandingPage({ onNavigateLogin, onNavigateSignup, onEnterApp }) {
+export default function LandingPage({ theme = 'light', setTheme, onNavigateLogin, onNavigateSignup, onEnterApp }) {
   const [selectedCanon, setSelectedCanon] = useState('catholic');
   const [activePromptId, setActivePromptId] = useState('tobit');
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
@@ -118,7 +118,7 @@ export default function LandingPage({ onNavigateLogin, onNavigateSignup, onEnter
           justifyContent: 'space-between',
           padding: '16px 24px',
           borderBottom: '1px solid var(--line)',
-          background: 'rgba(251, 246, 236, 0.95)',
+          background: 'var(--parchment)',
           backdropFilter: 'blur(12px)',
           WebkitBackdropFilter: 'blur(12px)',
           position: 'sticky',
@@ -127,7 +127,8 @@ export default function LandingPage({ onNavigateLogin, onNavigateSignup, onEnter
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 600, letterSpacing: '0.01em', color: 'var(--moss-dark)' }}>
+          <img src="/berea_logo.png" alt="Berea Logo" style={{ width: '34px', height: '34px', borderRadius: '8px', border: '1px solid var(--line-strong)' }} />
+          <span style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 600, letterSpacing: '0.01em', color: 'var(--ink)' }}>
             Berea
           </span>
           <span style={{ fontSize: '11px', background: 'var(--parchment-deep)', border: '1px solid var(--line-strong)', padding: '2px 8px', borderRadius: '999px', color: 'var(--gold)', fontWeight: 600 }}>
@@ -144,8 +145,22 @@ export default function LandingPage({ onNavigateLogin, onNavigateSignup, onEnter
         </nav>
 
         {/* Desktop Header Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }} class="landing-desktop-actions">
-          <button class="btn btn-ghost" onClick={onNavigateLogin} style={{ borderRadius: '8px', padding: '8px 16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }} class="landing-desktop-actions">
+          {/* Interactive Theme Switcher Toggle */}
+          <button
+            class={`theme-switch ${theme === 'dark' ? 'active' : ''}`}
+            onClick={() => setTheme && setTheme(theme === 'dark' ? 'light' : 'dark')}
+            title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+            aria-label="Toggle Theme"
+          >
+            <span class="theme-switch-track">
+              <span class="theme-switch-icon sun"><i class="ti ti-sun"></i></span>
+              <span class="theme-switch-icon moon"><i class="ti ti-moon"></i></span>
+              <span class="theme-switch-thumb"></span>
+            </span>
+          </button>
+
+          <button class="btn btn-ghost" onClick={onNavigateLogin} style={{ borderRadius: '8px', padding: '8px 16px', color: 'var(--ink)' }}>
             Sign in
           </button>
           <button class="btn btn-primary" onClick={onNavigateSignup} style={{ borderRadius: '8px', padding: '8px 18px', boxShadow: '0 4px 14px rgba(36, 58, 43, 0.2)' }}>
@@ -178,6 +193,22 @@ export default function LandingPage({ onNavigateLogin, onNavigateSignup, onEnter
               ❓ FAQ
             </a>
             
+            {/* Mobile Theme Switcher */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--line)' }}>
+              <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink)' }}>🎨 App Mode:</span>
+              <button
+                class={`theme-switch ${theme === 'dark' ? 'active' : ''}`}
+                onClick={() => setTheme && setTheme(theme === 'dark' ? 'light' : 'dark')}
+                aria-label="Toggle Theme"
+              >
+                <span class="theme-switch-track">
+                  <span class="theme-switch-icon sun"><i class="ti ti-sun"></i></span>
+                  <span class="theme-switch-icon moon"><i class="ti ti-moon"></i></span>
+                  <span class="theme-switch-thumb"></span>
+                </span>
+              </button>
+            </div>
+            
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '8px' }}>
               <button
                 class="btn btn-primary"
@@ -189,7 +220,7 @@ export default function LandingPage({ onNavigateLogin, onNavigateSignup, onEnter
               <button
                 class="btn btn-ghost"
                 onClick={() => { setMobileMenuOpen(false); onNavigateLogin(); }}
-                style={{ width: '100%', justifyContent: 'center', padding: '10px', background: '#fff' }}
+                style={{ width: '100%', justifyContent: 'center', padding: '10px', background: 'var(--bg-card)', color: 'var(--ink)' }}
               >
                 Sign In
               </button>
@@ -205,7 +236,7 @@ export default function LandingPage({ onNavigateLogin, onNavigateSignup, onEnter
           {/* Illuminated Dropcap */}
           <div class="dropcap-glow-container">
             <div class="dropcap-orbit"></div>
-            <div class="dropcap-large">B</div>
+            <div class="dropcap-large" style={{ color: 'var(--gold)' }}>B</div>
           </div>
 
           <div class="eyebrow" style={{ marginBottom: '12px' }}>
@@ -232,7 +263,7 @@ export default function LandingPage({ onNavigateLogin, onNavigateSignup, onEnter
             <a
               class="btn btn-ghost"
               href="#hero-preview"
-              style={{ fontSize: '15px', padding: '13px 24px', borderRadius: '10px', background: '#fff' }}
+              style={{ fontSize: '15px', padding: '13px 24px', borderRadius: '10px', background: 'var(--bg-card)', color: 'var(--ink)', border: '1px solid var(--line-strong)' }}
             >
               Explore Live Demo
             </a>
@@ -247,7 +278,7 @@ export default function LandingPage({ onNavigateLogin, onNavigateSignup, onEnter
               gap: '10px',
               padding: '10px 16px',
               borderRadius: '999px',
-              background: 'rgba(255, 255, 255, 0.85)',
+              background: 'var(--bg-card)',
               border: '1px solid var(--line-strong)',
               fontSize: '12.5px',
               color: 'var(--ink-soft)',
@@ -292,7 +323,7 @@ export default function LandingPage({ onNavigateLogin, onNavigateSignup, onEnter
           <div style={{ background: 'var(--parchment-deep)', borderRadius: '12px', padding: '20px', border: '1px solid var(--line)' }}>
             <div class="canon-detail-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
               <div>
-                <h3 style={{ fontSize: '19px', color: 'var(--moss-dark)', fontWeight: 600 }}>
+                <h3 style={{ fontSize: '19px', color: 'var(--ink)', fontWeight: 600 }}>
                   {CANON_DATA[selectedCanon].name}
                 </h3>
                 <p style={{ fontSize: '13.5px', color: 'var(--ink-soft)', marginTop: '4px', lineHeight: 1.5 }}>
@@ -325,31 +356,31 @@ export default function LandingPage({ onNavigateLogin, onNavigateSignup, onEnter
       </section>
 
       {/* Interactive App UI Mockup */}
-      <section style={{ padding: '40px 16px 72px', background: 'var(--moss-dark)', color: '#EFE9DA', position: 'relative' }}>
+      <section style={{ padding: '40px 16px 72px', background: 'var(--parchment-deep)', color: 'var(--ink)', position: 'relative' }}>
         <div style={{ maxWidth: '1120px', margin: '0 auto' }}>
           
           <div style={{ textAlign: 'center', marginBottom: '36px' }}>
             <div class="eyebrow" style={{ color: 'var(--gold)', marginBottom: '8px' }}>Product Experience</div>
-            <h2 style={{ fontSize: 'clamp(24px, 4.8vw, 34px)', color: '#fff' }}>Built For Reverent, Deep Scripture Study</h2>
-            <p style={{ color: '#C7D2C9', fontSize: '15px', maxWidth: '600px', margin: '8px auto 0' }}>
+            <h2 style={{ fontSize: 'clamp(24px, 4.8vw, 34px)', color: 'var(--ink)' }}>Built For Reverent, Deep Scripture Study</h2>
+            <p style={{ color: 'var(--ink-soft)', fontSize: '15px', maxWidth: '600px', margin: '8px auto 0' }}>
               Clean scripture pane paired with an intelligent historical AI assistant.
             </p>
           </div>
 
           {/* Mockup Frame */}
-          <div class="dark-glass-panel" style={{ overflow: 'hidden' }}>
+          <div class="glass-panel" style={{ overflow: 'hidden', padding: 0 }}>
             
             {/* Top Bar Mockup */}
-            <div style={{ padding: '12px 16px', background: 'rgba(0,0,0,0.3)', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+            <div style={{ padding: '12px 16px', background: 'var(--parchment-deep)', borderBottom: '1px solid var(--line)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: '#FF5F56' }}></span>
                 <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: '#FFBD2E' }}></span>
                 <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: '#27C93F' }}></span>
-                <span style={{ fontSize: '12.5px', color: '#A9C2AE', marginLeft: '6px', fontWeight: 500 }}>
+                <span style={{ fontSize: '12.5px', color: 'var(--ink-soft)', marginLeft: '6px', fontWeight: 500 }}>
                   Tobit 1:1-3 (Catholic Canon)
                 </span>
               </div>
-              <div style={{ fontSize: '11px', background: 'rgba(255,255,255,0.1)', padding: '3px 8px', borderRadius: '6px', color: '#E7EEE7' }}>
+              <div style={{ fontSize: '11px', background: 'var(--parchment)', padding: '3px 8px', borderRadius: '6px', color: 'var(--ink)' }}>
                 ESV / NRSV Catholic
               </div>
             </div>
@@ -358,7 +389,7 @@ export default function LandingPage({ onNavigateLogin, onNavigateSignup, onEnter
             <div class="mockup-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 340px', minHeight: '360px' }}>
               
               {/* Left Pane: Scripture Text */}
-              <div style={{ padding: '24px 20px', background: '#FBF6EC', color: 'var(--ink)' }}>
+              <div style={{ padding: '24px 20px', background: 'var(--bg-card)', color: 'var(--ink)' }}>
                 <div style={{ fontSize: '11px', color: 'var(--gold)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '8px', fontWeight: 600 }}>
                   Tobit 1:1-3 • Deuterocanon
                 </div>
@@ -371,38 +402,38 @@ export default function LandingPage({ onNavigateLogin, onNavigateSignup, onEnter
                 </div>
 
                 <div style={{ marginTop: '20px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  <span style={{ background: 'var(--parchment-deep)', border: '1px solid var(--line-strong)', padding: '5px 10px', borderRadius: '6px', fontSize: '11.5px', color: 'var(--moss-dark)' }}>
+                  <span style={{ background: 'var(--parchment-deep)', border: '1px solid var(--line-strong)', padding: '5px 10px', borderRadius: '6px', fontSize: '11.5px', color: 'var(--ink)' }}>
                     🏷️ Historical Context
                   </span>
-                  <span style={{ background: 'var(--parchment-deep)', border: '1px solid var(--line-strong)', padding: '5px 10px', borderRadius: '6px', fontSize: '11.5px', color: 'var(--moss-dark)' }}>
+                  <span style={{ background: 'var(--parchment-deep)', border: '1px solid var(--line-strong)', padding: '5px 10px', borderRadius: '6px', fontSize: '11.5px', color: 'var(--ink)' }}>
                     🔗 Cross References (3)
                   </span>
                 </div>
               </div>
 
               {/* Right Pane: AI Assistant Mockup */}
-              <div class="mockup-assistant-pane" style={{ padding: '20px', background: '#192B1D', borderLeft: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column' }}>
+              <div class="mockup-assistant-pane" style={{ padding: '20px', background: 'var(--parchment-deep)', borderLeft: '1px solid var(--line)', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gold)', fontSize: '13px', fontWeight: 600, marginBottom: '14px' }}>
                   <i class="ti ti-sparkles"></i> Berea AI Assistant
                 </div>
 
                 {/* Interactive Mockup Tabs */}
-                <div style={{ display: 'flex', gap: '6px', marginBottom: '14px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px' }}>
+                <div style={{ display: 'flex', gap: '6px', marginBottom: '14px', borderBottom: '1px solid var(--line)', paddingBottom: '8px' }}>
                   <button
                     onClick={() => setMockupTab('overview')}
-                    style={{ background: mockupTab === 'overview' ? 'rgba(255,255,255,0.18)' : 'transparent', border: 'none', color: '#fff', fontSize: '12px', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer' }}
+                    style={{ background: mockupTab === 'overview' ? 'var(--moss)' : 'transparent', border: 'none', color: mockupTab === 'overview' ? '#fff' : 'var(--ink)', fontSize: '12px', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer' }}
                   >
                     Overview
                   </button>
                   <button
                     onClick={() => setMockupTab('traditions')}
-                    style={{ background: mockupTab === 'traditions' ? 'rgba(255,255,255,0.18)' : 'transparent', border: 'none', color: '#fff', fontSize: '12px', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer' }}
+                    style={{ background: mockupTab === 'traditions' ? 'var(--moss)' : 'transparent', border: 'none', color: mockupTab === 'traditions' ? '#fff' : 'var(--ink)', fontSize: '12px', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer' }}
                   >
                     Tradition Views
                   </button>
                 </div>
 
-                <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: '10px', padding: '12px', fontSize: '12.5px', lineHeight: 1.6, color: '#E7EEE7', flex: 1 }}>
+                <div style={{ background: 'var(--bg-card)', borderRadius: '10px', padding: '12px', fontSize: '12.5px', lineHeight: 1.6, color: 'var(--ink)', flex: 1, border: '1px solid var(--line)' }}>
                   {mockupTab === 'overview' ? (
                     <p>
                       <strong>Tobit Historical Summary:</strong> Written in Aramaic/Hebrew around 200 BC, Tobit recounts a righteous Israelite living in Assyrian exile. It emphasizes piety and angelic protection.
@@ -414,7 +445,7 @@ export default function LandingPage({ onNavigateLogin, onNavigateSignup, onEnter
                   )}
                 </div>
 
-                <div style={{ marginTop: '14px', background: 'rgba(255,255,255,0.08)', borderRadius: '8px', padding: '8px 12px', fontSize: '12px', color: '#8FAB95' }}>
+                <div style={{ marginTop: '14px', background: 'var(--parchment)', border: '1px solid var(--line)', borderRadius: '8px', padding: '8px 12px', fontSize: '12px', color: 'var(--ink-soft)' }}>
                   💬 Ask about Tobit's timeline or cross-references...
                 </div>
               </div>
@@ -512,9 +543,9 @@ export default function LandingPage({ onNavigateLogin, onNavigateSignup, onEnter
           </div>
 
           {/* Response Box */}
-          <div class="glass-panel" style={{ padding: '24px 20px', background: '#fff' }}>
+          <div class="glass-panel" style={{ padding: '24px 20px', background: 'var(--bg-card)' }}>
             <div class="prompt-response-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid var(--line)', paddingBottom: '10px' }}>
-              <div style={{ fontWeight: 600, color: 'var(--moss-dark)', fontSize: '15px' }}>
+              <div style={{ fontWeight: 600, color: 'var(--ink)', fontSize: '15px' }}>
                 Question: "{activePrompt.title}"
               </div>
               <span style={{ fontSize: '11.5px', background: 'var(--parchment-deep)', padding: '4px 10px', borderRadius: '6px', color: 'var(--gold)', fontWeight: 600 }}>
@@ -565,12 +596,12 @@ export default function LandingPage({ onNavigateLogin, onNavigateSignup, onEnter
       </section>
 
       {/* Final CTA Banner */}
-      <section style={{ padding: '72px 16px', background: 'var(--moss-dark)', color: '#fff', textAlign: 'center' }}>
+      <section style={{ padding: '72px 16px', background: 'var(--parchment-deep)', color: 'var(--ink)', textAlign: 'center', borderTop: '1px solid var(--line)' }}>
         <div style={{ maxWidth: '640px', margin: '0 auto' }}>
-          <h2 style={{ fontSize: 'clamp(26px, 5vw, 36px)', color: '#fff', marginBottom: '14px' }}>
+          <h2 style={{ fontSize: 'clamp(26px, 5vw, 36px)', color: 'var(--ink)', marginBottom: '14px' }}>
             Start Where You Already Are.
           </h2>
-          <p style={{ color: '#C7D2C9', fontSize: '15.5px', lineHeight: 1.6, marginBottom: '28px' }}>
+          <p style={{ color: 'var(--ink-soft)', fontSize: '15.5px', lineHeight: 1.6, marginBottom: '28px' }}>
             Bring your tradition, your translation, and your study habits. Berea meets you there, then opens the door further.
           </p>
 

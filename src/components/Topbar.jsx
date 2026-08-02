@@ -1,6 +1,8 @@
 import React from 'react';
 
 export default function Topbar({
+  theme = 'light',
+  setTheme,
   translation,
   setTranslation,
   tradition,
@@ -11,6 +13,8 @@ export default function Topbar({
   setAssistantOpen,
   onNavigateLanding
 }) {
+  const isDark = theme === 'dark';
+
   return (
     <header class="topbar">
       <div class="topbar-left">
@@ -21,7 +25,10 @@ export default function Topbar({
         >
           <i class="ti ti-menu-2"></i>
         </button>
-        <div class="brand" onClick={onNavigateLanding}>Berea</div>
+        <div class="brand-container" onClick={onNavigateLanding}>
+          <img src="/berea_logo.png" alt="Berea Logo" class="brand-logo-img" />
+          <span class="brand">Berea</span>
+        </div>
         <div class="crumb">John <b>3</b></div>
       </div>
       <div class="topbar-mid">
@@ -46,6 +53,20 @@ export default function Topbar({
           <option value="Orthodox">Orthodox</option>
           <option value="Ethiopian">Ethiopian</option>
         </select>
+
+        {/* Interactive Theme Switcher Toggle */}
+        <button
+          class={`theme-switch ${isDark ? 'active' : ''}`}
+          onClick={() => setTheme && setTheme(isDark ? 'light' : 'dark')}
+          title={`Switch to ${isDark ? 'Light' : 'Dark'} Mode`}
+          aria-label="Toggle Theme"
+        >
+          <span class="theme-switch-track">
+            <span class="theme-switch-icon sun"><i class="ti ti-sun"></i></span>
+            <span class="theme-switch-icon moon"><i class="ti ti-moon"></i></span>
+            <span class="theme-switch-thumb"></span>
+          </span>
+        </button>
       </div>
       <div class="topbar-right">
         <button class="icon-btn" aria-label="Search">

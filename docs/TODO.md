@@ -26,25 +26,25 @@ If a licensed provider (if added later) is briefly unavailable, the app falls ba
 - [x] `.env.example`, deployment target chosen
 
 ## Phase 1 — MVP: Bible Core
-- [ ] App shell splash/loading state during session + data hydration (distinct from the public landing page)
-- [ ] Canon-status data model (see `ARCHITECTURE.md`)
-- [ ] Ingest public-domain translations (KJV, WEB) as permanent static data — the always-available floor
-- [ ] Integrate Free Use Bible API for translation breadth (no key required, permanently cacheable)
-- [ ] (Optional, later) API.Bible integration for named licensed translations, short-TTL cache per provider limits
-- [ ] (Optional, later) ESV API integration if ESV specifically is wanted, same short-TTL caching constraint
-- [ ] Fallback logic: any optional licensed translation unavailable → serve public-domain/Free Use Bible API translation instead of erroring
-- [ ] Reader UI: book/chapter/verse navigation, translation switcher
-- [ ] Search (keyword, Postgres full-text)
-- [ ] Auth (Supabase Auth — email + at least one OAuth provider)
-- [ ] Bookmarks + basic notes (tied to verse reference)
-- [ ] Offline caching of at least one default translation
+- [x] App shell splash/loading state during session + data hydration (distinct from the public landing page)
+- [x] Canon-status data model (see `ARCHITECTURE.md`)
+- [x] Ingest public-domain translations (KJV, WEB) as permanent static data — the always-available floor
+- [x] Integrate Free Use Bible API for translation breadth (no key required, permanently cacheable)
+- [x] (Optional, later) API.Bible integration for named licensed translations, short-TTL cache per provider limits
+- [x] (Optional, later) ESV API integration if ESV specifically is wanted, same short-TTL caching constraint
+- [x] Fallback logic: any optional licensed translation unavailable → serve public-domain/Free Use Bible API translation instead of erroring
+- [x] Reader UI: book/chapter/verse navigation, translation switcher
+- [x] Search (keyword, Postgres full-text & offline local search)
+- [x] Auth (Supabase Auth — email + Google OAuth provider)
+- [x] Bookmarks + basic notes (tied to verse reference)
+- [x] Offline caching of at least one default translation
 
 ## Phase 2 — Beyond Canon
-- [ ] Ingest Deuterocanon/Apocrypha (public domain sources)
-- [ ] Ingest Pseudepigrapha (Enoch, Jubilees, etc. — R.H. Charles translations)
-- [ ] Canon comparison view (Protestant/Catholic/Orthodox/Ethiopian)
-- [ ] Denominational lens toggle (user sets tradition, content adapts)
-- [ ] Early church writings (Didache, Clement, Ignatius)
+- [x] Ingest Deuterocanon/Apocrypha (public domain sources)
+- [x] Ingest Pseudepigrapha (Enoch, Jubilees, etc. — R.H. Charles translations)
+- [x] Canon comparison view (Protestant/Catholic/Orthodox/Ethiopian)
+- [x] Denominational lens toggle (user sets tradition, content adapts)
+- [x] Early church writings (Didache, Clement, Ignatius)
 
 ## Phase 3 — AI Assistant
 - [ ] Persistent assistant panel (available from any screen)
