@@ -14,6 +14,12 @@ import PlansView from './features/plans/PlansView';
 import AppHydrationSplash from './components/AppHydrationSplash';
 import SearchView from './features/search/SearchView';
 import CanonComparisonView from './features/beyond/CanonComparisonView';
+import InterlinearView from './features/languages/InterlinearView';
+import MemorizationView from './features/memorization/MemorizationView';
+import AccessibilitySettingsView from './features/settings/AccessibilitySettingsView';
+import CommunityHubView from './features/community/CommunityHubView';
+
+import { listenToAuthState, signOutUser } from './services/authService';
 
 export default function App() {
   const [route, setRoute] = useState('landing'); // 'landing' | 'login' | 'signup' | 'verify-email' | 'app'
@@ -34,6 +40,28 @@ export default function App() {
     localStorage.setItem('berea_theme', theme);
   }, [theme]);
 
+  // Real Supabase Auth State Change Listener (OAuth Callback Handler)
+  useEffect(() => {
+    const { data: authListener } = listenToAuthState((event, session) => {
+      if (session?.user) {
+        setIsAuthenticated(true);
+        localStorage.setItem('berea_auth', 'true');
+        // If coming back from Google OAuth redirect, route to app
+        if (event === 'SIGNED_IN') {
+          setHydrating(true);
+          setRoute('app');
+        }
+      } else if (event === 'SIGNED_OUT') {
+        setIsAuthenticated(false);
+        localStorage.removeItem('berea_auth');
+      }
+    });
+
+    return () => {
+      authListener?.subscription?.unsubscribe();
+    };
+  }, []);
+
   const handleLoginSuccess = (selectedTradition) => {
     if (selectedTradition) setTradition(selectedTradition);
     setIsAuthenticated(true);
@@ -42,9 +70,9 @@ export default function App() {
     setRoute('app');
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await signOutUser();
     setIsAuthenticated(false);
-    localStorage.removeItem('berea_auth');
     setRoute('login');
   };
 
@@ -127,6 +155,14 @@ export default function App() {
         return <PlansView />;
       case 'search':
         return <SearchView />;
+      case 'interlinear':
+        return <InterlinearView />;
+      case 'memorize':
+        return <MemorizationView />;
+      case 'community':
+        return <CommunityHubView />;
+      case 'settings':
+        return <AccessibilitySettingsView theme={theme} setTheme={setTheme} />;
       case 'beyond':
         return <CanonComparisonView currentTradition={tradition} setTradition={setTradition} />;
       case 'read':
@@ -136,7 +172,7 @@ export default function App() {
   };
 
   return (
-    <div class={`app ${!assistantOpen ? 'app-no-assistant' : ''}`}>
+    <div className={`app ${!assistantOpen ? 'app-no-assistant' : ''}`}>
       <Topbar
         theme={theme}
         setTheme={setTheme}
@@ -171,36 +207,36 @@ export default function App() {
         />
       )}
 
-      <div class="bottombar">
+      <div className="bottombar">
         <button
-          class={`bb-item ${activeTab === 'read' ? 'active' : ''}`}
+          className={`bb-item ${activeTab === 'read' ? 'active' : ''}`}
           onClick={() => setActiveTab('read')}
         >
-          <i class="ti ti-book-2"></i>Read
+          <i className="ti ti-book-2"></i>Read
         </button>
         <button
-          class={`bb-item ${activeTab === 'search' ? 'active' : ''}`}
+          className={`bb-item ${activeTab === 'search' ? 'active' : ''}`}
           onClick={() => setActiveTab('search')}
         >
-          <i class="ti ti-search"></i>Search
+          <i className="ti ti-search"></i>Search
         </button>
         <button
-          class={`bb-item ${activeTab === 'plans' ? 'active' : ''}`}
+          className={`bb-item ${activeTab === 'plans' ? 'active' : ''}`}
           onClick={() => setActiveTab('plans')}
         >
-          <i class="ti ti-calendar"></i>Plans
+          <i className="ti ti-calendar"></i>Plans
         </button>
         <button
-          class={`bb-item ${activeTab === 'notes' ? 'active' : ''}`}
+          className={`bb-item ${activeTab === 'notes' ? 'active' : ''}`}
           onClick={() => setActiveTab('notes')}
         >
-          <i class="ti ti-notes"></i>Notes
+          <i className="ti ti-notes"></i>Notes
         </button>
         <button
-          class="bb-item"
+          className="bb-item"
           onClick={() => setAssistantOpen(!assistantOpen)}
         >
-          <i class="ti ti-sparkles"></i>Assistant
+          <i className="ti ti-sparkles"></i>Assistant
         </button>
       </div>
     </div>

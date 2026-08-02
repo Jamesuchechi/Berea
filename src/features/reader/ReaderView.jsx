@@ -52,8 +52,8 @@ export default function ReaderView({ translation = 'ESV', tradition = 'Protestan
   };
 
   return (
-    <main class="reader" style={{ background: 'var(--parchment)', color: 'var(--ink)' }}>
-      <div class="reader-inner" style={{ maxWidth: '680px', margin: '0 auto' }}>
+    <main className="reader" style={{ background: 'var(--parchment)', color: 'var(--ink)' }}>
+      <div className="reader-inner" style={{ maxWidth: '680px', margin: '0 auto' }}>
         
         {/* Quick Chapter Selector Toolbar */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '24px', paddingBottom: '14px', borderBottom: '1px solid var(--line)' }}>
@@ -84,12 +84,12 @@ export default function ReaderView({ translation = 'ESV', tradition = 'Protestan
         </div>
 
         {/* Passage Eyebrow */}
-        <div class="ref-eyebrow" style={{ fontSize: '13px', color: 'var(--gold)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '12px', fontWeight: 600 }}>
+        <div className="ref-eyebrow" style={{ fontSize: '13px', color: 'var(--gold)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '12px', fontWeight: 600 }}>
           {currentPassage.testament} • {currentPassage.book} Chapter {currentPassage.chapter}
         </div>
 
         {/* Verses Reading Display */}
-        <div class="verse" style={{ fontFamily: 'var(--font-display)', fontSize: '20px', lineHeight: 1.9, color: 'var(--ink)' }}>
+        <div className="verse" style={{ fontFamily: 'var(--font-display)', fontSize: '20px', lineHeight: 1.9, color: 'var(--ink)' }}>
           {currentPassage.verses.map((v) => {
             const isHighlighted = highlightedVerses.includes(v.num);
             return (
@@ -105,7 +105,7 @@ export default function ReaderView({ translation = 'ESV', tradition = 'Protestan
                   display: 'inline'
                 }}
               >
-                <span class="vnum" style={{ color: 'var(--gold)', fontSize: '13px', fontWeight: 700, verticalAlign: 'super', marginRight: '4px' }}>
+                <span className="vnum" style={{ color: 'var(--gold)', fontSize: '13px', fontWeight: 700, verticalAlign: 'super', marginRight: '4px' }}>
                   {v.num}
                 </span>
                 {v.text}{' '}
@@ -120,40 +120,40 @@ export default function ReaderView({ translation = 'ESV', tradition = 'Protestan
         </div>
 
         {/* Verse Action Toolbar */}
-        <div class="verse-actions" style={{ marginTop: '28px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+        <div className="verse-actions" style={{ marginTop: '28px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           <button
-            class="tag-btn"
+            className="tag-btn"
             onClick={() => toggleHighlight(activeVerse)}
             style={{ background: 'var(--parchment-deep)', color: 'var(--ink)', border: '1px solid var(--line-strong)', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer' }}
           >
-            <i class="ti ti-highlight" style={{ color: 'var(--gold)' }}></i> Highlight Verse {activeVerse}
+            <i className="ti ti-highlight" style={{ color: 'var(--gold)' }}></i> Highlight Verse {activeVerse}
           </button>
           
           <button
-            class="tag-btn"
+            className="tag-btn"
             onClick={() => alert(`Created note anchor for ${currentPassage.book} ${currentPassage.chapter}:${activeVerse}`)}
             style={{ background: 'var(--parchment-deep)', color: 'var(--ink)', border: '1px solid var(--line-strong)', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer' }}
           >
-            <i class="ti ti-notes" style={{ color: 'var(--gold)' }}></i> Add Study Note
+            <i className="ti ti-notes" style={{ color: 'var(--gold)' }}></i> Add Study Note
           </button>
 
           <button
-            class="tag-btn"
+            className="tag-btn"
             onClick={() => setIsPlaying(!isPlaying)}
             style={{ background: 'var(--parchment-deep)', color: 'var(--ink)', border: '1px solid var(--line-strong)', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer' }}
           >
-            <i class={isPlaying ? "ti ti-player-pause" : "ti ti-player-play"} style={{ color: 'var(--gold)' }}></i> {isPlaying ? "Pause Audio" : "Listen Chapter"}
+            <i className={isPlaying ? "ti ti-player-pause" : "ti ti-player-play"} style={{ color: 'var(--gold)' }}></i> {isPlaying ? "Pause Audio" : "Listen Chapter"}
           </button>
         </div>
 
         {/* Audio Player Bar */}
-        <div class="audio-player-bar">
+        <div className="audio-player-bar">
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <button
               onClick={() => setIsPlaying(!isPlaying)}
               style={{ background: 'var(--moss)', color: '#fff', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
             >
-              <i class={isPlaying ? "ti ti-player-pause" : "ti ti-player-play"} style={{ fontSize: '18px' }}></i>
+              <i className={isPlaying ? "ti ti-player-pause" : "ti ti-player-play"} style={{ fontSize: '18px' }}></i>
             </button>
 
             <div>

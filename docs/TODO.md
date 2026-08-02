@@ -46,29 +46,29 @@ If a licensed provider (if added later) is briefly unavailable, the app falls ba
 - [x] Denominational lens toggle (user sets tradition, content adapts)
 - [x] Early church writings (Didache, Clement, Ignatius)
 
-## Phase 3 — AI Assistant
-- [ ] Persistent assistant panel (available from any screen)
-- [ ] Context-passing interface (current book/chapter/verse/translation/tradition/note → AI request)
-- [ ] Contextual triggers (explain verse, find cross-references, expand note) feed into assistant panel
-- [ ] Semantic search across canon + apocrypha + notes
-- [ ] Guardrails for contested theological questions (present multiple traditions' views rather than asserting one)
+## Phase 3 — AI Assistant (groq api configured in .env.local)
+- [x] Persistent assistant panel (available from any screen)
+- [x] Context-passing interface (current book/chapter/verse/translation/tradition/note → AI request)
+- [x] Contextual triggers (explain verse, find cross-references, expand note) feed into assistant panel
+- [x] Semantic search across canon + apocrypha + notes
+- [x] Guardrails for contested theological questions (present multiple traditions' views rather than asserting one)
 
 ## Phase 4 — Study Tools
-- [ ] Audio Bible (TTS or licensed audio source)
-- [ ] Reading plans (fixed: 365-day, Lent, topical; AI-personalized plan generation)
-- [ ] Diagrams: genealogy trees, timelines, cross-reference network graph, interactive maps
-- [ ] Original language tools: interlinear Greek/Hebrew, Strong's numbers, lexicon lookup
+- [x] Audio Bible (TTS or licensed audio source)
+- [x] Reading plans (fixed: 365-day, Lent, topical; AI-personalized plan generation)
+- [x] Diagrams: genealogy trees, timelines, cross-reference network graph, interactive maps
+- [x] Original language tools: interlinear Greek/Hebrew, Strong's numbers, lexicon lookup
 
 ## Phase 5 — Engagement & Accessibility
-- [ ] Memorization mode (spaced repetition)
-- [ ] Daily verse + notifications
-- [ ] Accessibility: text-to-speech for any text, adjustable font/size, dyslexia-friendly font option, dark mode
-- [ ] Reading streaks / habit tracking
+- [x] Memorization mode (spaced repetition)
+- [x] Daily verse + notifications
+- [x] Accessibility: text-to-speech for any text, adjustable font/size, dyslexia-friendly font option, dark mode
+- [x] Reading streaks / habit tracking
 
 ## Phase 6 — Community (later phase — evaluate scope/moderation cost before starting)
-- [ ] Prayer wall
-- [ ] Group reading plans
-- [ ] Comments/discussion with moderation tooling
+- [x] Prayer wall
+- [x] Group reading plans
+- [x] Comments/discussion with moderation tooling
 
 ## Phase 7 — Hardening & Launch
 - [ ] Offline strategy audit (what's cached vs online-only)

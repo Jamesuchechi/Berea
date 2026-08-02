@@ -54,12 +54,12 @@ export default function CanonComparisonView({ currentTradition = 'protestant', s
   };
 
   return (
-    <main class="reader" style={{ background: 'var(--parchment)', color: 'var(--ink)' }}>
-      <div class="reader-inner" style={{ maxWidth: '860px', margin: '0 auto' }}>
+    <main className="reader" style={{ background: 'var(--parchment)', color: 'var(--ink)' }}>
+      <div className="reader-inner" style={{ maxWidth: '860px', margin: '0 auto' }}>
         
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-          <div class="eyebrow" style={{ color: 'var(--gold)', marginBottom: '6px' }}>
+          <div className="eyebrow" style={{ color: 'var(--gold)', marginBottom: '6px' }}>
             Phase 2 • Beyond Canon & Tradition Comparison
           </div>
           <h2 style={{ fontSize: '28px', color: 'var(--ink)', fontWeight: 600 }}>
@@ -71,7 +71,7 @@ export default function CanonComparisonView({ currentTradition = 'protestant', s
         </div>
 
         {/* Denominational Lens Toggle Bar */}
-        <div class="card" style={{ background: 'var(--parchment-deep)', border: '1.5px solid var(--gold)', borderRadius: '16px', padding: '20px', marginBottom: '32px' }}>
+        <div className="card" style={{ background: 'var(--parchment-deep)', border: '1.5px solid var(--gold)', borderRadius: '16px', padding: '20px', marginBottom: '32px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '14px' }}>
             <div>
               <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--gold)', fontWeight: 700 }}>
@@ -153,7 +153,7 @@ export default function CanonComparisonView({ currentTradition = 'protestant', s
         </div>
 
         {/* Active Book Detail Banner */}
-        <div class="card" style={{ background: 'var(--bg-card)', border: '1px solid var(--line-strong)', borderRadius: '14px', padding: '22px', marginBottom: '28px' }}>
+        <div className="card" style={{ background: 'var(--bg-card)', border: '1px solid var(--line-strong)', borderRadius: '14px', padding: '22px', marginBottom: '28px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '10px' }}>
             <div>
               <span style={{ fontSize: '11px', background: 'var(--parchment-deep)', color: 'var(--gold)', padding: '2px 8px', borderRadius: '4px', fontWeight: 700, textTransform: 'uppercase' }}>
@@ -184,7 +184,7 @@ export default function CanonComparisonView({ currentTradition = 'protestant', s
             return (
               <div
                 key={tKey}
-                class="card"
+                className="card"
                 style={{
                   background: t.bg,
                   border: `1.5px solid ${t.border}`,

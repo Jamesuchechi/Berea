@@ -18,25 +18,49 @@ const CANON_TIMELINE = [
   { year: '393-397 AD', event: 'Councils of Hippo & Carthage', desc: 'Early Western Church ratifies 73-book canon including Septuagint Deuterocanon.' }
 ];
 
+const MAPS_DATA = [
+  {
+    id: 'assyrian',
+    title: 'Tobit & The Assyrian Exile (722–612 BC)',
+    region: 'Nineveh, Upper Galilee, Rages in Media',
+    desc: 'Tracks Tobit’s journey from Thisbe in Naphtali to Nineveh, and Tobias’s journey to Media with Raphael.'
+  },
+  {
+    id: 'maccabean',
+    title: 'Hasmonaean Judea & Maccabean Revolt (167–160 BC)',
+    region: 'Modin, Beth-Horon, Emmaus, Jerusalem',
+    desc: 'Key battle sites of Judas Maccabeus against Seleucid forces, leading to the cleansing of the Temple.'
+  },
+  {
+    id: 'paul',
+    title: 'Paul’s Missionary Journeys & Early Church (46–62 AD)',
+    region: 'Antioch, Ephesus, Thessalonica, Berea, Rome',
+    desc: 'The spread of the Gospel across Asia Minor, Macedonia (Berea), and Rome.'
+  }
+];
+
 export default function DiagramsView() {
   const [activeTab, setActiveTab] = useState('lineage');
+  const [selectedMapId, setSelectedMapId] = useState('assyrian');
+
+  const selectedMap = MAPS_DATA.find(m => m.id === selectedMapId) || MAPS_DATA[0];
 
   return (
-    <main class="reader" style={{ background: 'var(--parchment)', color: 'var(--ink)' }}>
-      <div class="reader-inner" style={{ maxWidth: '800px', margin: '0 auto' }}>
+    <main className="reader" style={{ background: 'var(--parchment)', color: 'var(--ink)' }}>
+      <div className="reader-inner" style={{ maxWidth: '800px', margin: '0 auto' }}>
         
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
           <h2 style={{ fontSize: '28px', color: 'var(--ink)', fontWeight: 600 }}>Visual Diagrams & Historical Maps</h2>
           <p style={{ fontSize: '14.5px', color: 'var(--ink-soft)', marginTop: '6px' }}>
-            Interactive timelines, lineage trees, and manuscript relationship networks.
+            Interactive timelines, lineage trees, and Biblical geography maps.
           </p>
 
           {/* Tab Switcher */}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '20px' }}>
             <button
               onClick={() => setActiveTab('lineage')}
               style={{
-                padding: '8px 18px',
+                padding: '8px 16px',
                 borderRadius: '999px',
                 fontSize: '13px',
                 fontWeight: 600,
@@ -46,13 +70,13 @@ export default function DiagramsView() {
                 cursor: 'pointer'
               }}
             >
-              🌳 Patriarchal & Davidic Lineage
+              🌳 Patriarchal Lineage
             </button>
 
             <button
               onClick={() => setActiveTab('timeline')}
               style={{
-                padding: '8px 18px',
+                padding: '8px 16px',
                 borderRadius: '999px',
                 fontSize: '13px',
                 fontWeight: 600,
@@ -62,14 +86,30 @@ export default function DiagramsView() {
                 cursor: 'pointer'
               }}
             >
-              📜 Deuterocanon History Timeline
+              📜 Canon History Timeline
+            </button>
+
+            <button
+              onClick={() => setActiveTab('maps')}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '999px',
+                fontSize: '13px',
+                fontWeight: 600,
+                border: '1px solid var(--line-strong)',
+                background: activeTab === 'maps' ? 'var(--moss)' : 'var(--bg-card)',
+                color: activeTab === 'maps' ? '#fff' : 'var(--ink)',
+                cursor: 'pointer'
+              }}
+            >
+              🗺️ Historical Maps
             </button>
           </div>
         </div>
 
         {/* Tab 1: Lineage Tree */}
         {activeTab === 'lineage' && (
-          <div class="card" style={{ background: 'var(--bg-card)', padding: '28px', borderRadius: '16px', border: '1px solid var(--line-strong)' }}>
+          <div className="card" style={{ background: 'var(--bg-card)', padding: '28px', borderRadius: '16px', border: '1px solid var(--line-strong)' }}>
             <h3 style={{ fontSize: '20px', color: 'var(--gold)', marginBottom: '20px', fontWeight: 600, textAlign: 'center' }}>
               The Lineage of the Promise (Matthew 1 / Luke 3)
             </h3>
@@ -98,7 +138,7 @@ export default function DiagramsView() {
 
         {/* Tab 2: Canon Timeline */}
         {activeTab === 'timeline' && (
-          <div class="card" style={{ background: 'var(--bg-card)', padding: '28px', borderRadius: '16px', border: '1px solid var(--line-strong)' }}>
+          <div className="card" style={{ background: 'var(--bg-card)', padding: '28px', borderRadius: '16px', border: '1px solid var(--line-strong)' }}>
             <h3 style={{ fontSize: '20px', color: 'var(--gold)', marginBottom: '20px', fontWeight: 600, textAlign: 'center' }}>
               Deuterocanon & Septuagint Historical Formation
             </h3>
@@ -117,6 +157,48 @@ export default function DiagramsView() {
                   </p>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Tab 3: Historical Maps */}
+        {activeTab === 'maps' && (
+          <div className="card" style={{ background: 'var(--bg-card)', padding: '28px', borderRadius: '16px', border: '1px solid var(--line-strong)' }}>
+            <h3 style={{ fontSize: '20px', color: 'var(--gold)', marginBottom: '16px', fontWeight: 600, textAlign: 'center' }}>
+              Interactive Biblical Geography Maps
+            </h3>
+
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '20px' }}>
+              {MAPS_DATA.map(m => (
+                <button
+                  key={m.id}
+                  onClick={() => setSelectedMapId(m.id)}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '8px',
+                    fontSize: '12.5px',
+                    fontWeight: 600,
+                    border: '1px solid var(--line-strong)',
+                    background: selectedMapId === m.id ? 'var(--moss)' : 'var(--parchment-deep)',
+                    color: selectedMapId === m.id ? '#fff' : 'var(--ink)',
+                    cursor: 'pointer'
+                  }}
+                >
+                  📍 {m.title.split(' ')[0]} {m.title.split(' ')[1]}
+                </button>
+              ))}
+            </div>
+
+            <div style={{ background: 'var(--parchment-deep)', padding: '24px', borderRadius: '14px', border: '1px solid var(--line-strong)', textAlign: 'center' }}>
+              <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--gold)', fontWeight: 700, marginBottom: '6px' }}>
+                {selectedMap.region}
+              </div>
+              <h4 style={{ fontSize: '19px', color: 'var(--ink)', fontWeight: 600, marginBottom: '8px' }}>
+                {selectedMap.title}
+              </h4>
+              <p style={{ fontSize: '14px', color: 'var(--ink-soft)', lineHeight: 1.6, maxWidth: '560px', margin: '0 auto' }}>
+                {selectedMap.desc}
+              </p>
             </div>
           </div>
         )}

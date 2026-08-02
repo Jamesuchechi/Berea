@@ -63,8 +63,8 @@ export default function NotesView() {
   };
 
   return (
-    <main class="reader" style={{ background: 'var(--parchment)', color: 'var(--ink)' }}>
-      <div class="reader-inner" style={{ maxWidth: '760px', margin: '0 auto' }}>
+    <main className="reader" style={{ background: 'var(--parchment)', color: 'var(--ink)' }}>
+      <div className="reader-inner" style={{ maxWidth: '760px', margin: '0 auto' }}>
         
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
           <div>
@@ -139,7 +139,7 @@ export default function NotesView() {
             style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--line)', background: 'var(--bg-card)', color: 'var(--ink)', fontSize: '13.5px', outline: 'none', resize: 'vertical' }}
           ></textarea>
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
-            <button type="submit" class="btn btn-primary" style={{ padding: '8px 18px', fontSize: '13px' }}>
+            <button type="submit" className="btn btn-primary" style={{ padding: '8px 18px', fontSize: '13px' }}>
               Save Anchored Note
             </button>
           </div>
@@ -148,7 +148,7 @@ export default function NotesView() {
         {/* Notes Cards List */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {filteredNotes.map((note) => (
-            <div key={note.id} class="card" style={{ background: 'var(--bg-card)', border: '1px solid var(--line-strong)', borderRadius: '12px', padding: '20px' }}>
+            <div key={note.id} className="card" style={{ background: 'var(--bg-card)', border: '1px solid var(--line-strong)', borderRadius: '12px', padding: '20px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: 600, color: 'var(--gold)' }}>

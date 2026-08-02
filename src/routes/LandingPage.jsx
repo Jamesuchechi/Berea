@@ -108,7 +108,7 @@ export default function LandingPage({ theme = 'light', setTheme, onNavigateLogin
     <div style={{ background: 'var(--parchment)', color: 'var(--ink)', minHeight: '100vh', position: 'relative', overflowX: 'hidden' }}>
       
       {/* Background Radial Glow */}
-      <div class="hero-glow"></div>
+      <div className="hero-glow"></div>
 
       {/* Responsive Sticky Header */}
       <header
@@ -137,7 +137,7 @@ export default function LandingPage({ theme = 'light', setTheme, onNavigateLogin
         </div>
 
         {/* Desktop Navigation */}
-        <nav style={{ display: 'flex', gap: '28px', fontSize: '14px', fontWeight: 500, color: 'var(--ink-soft)' }} class="landing-desktop-nav">
+        <nav style={{ display: 'flex', gap: '28px', fontSize: '14px', fontWeight: 500, color: 'var(--ink-soft)' }} className="landing-desktop-nav">
           <a href="#hero-preview">Canon Switcher</a>
           <a href="#features">What's Inside</a>
           <a href="#assistant-demo">AI Assistant</a>
@@ -145,51 +145,74 @@ export default function LandingPage({ theme = 'light', setTheme, onNavigateLogin
         </nav>
 
         {/* Desktop Header Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }} class="landing-desktop-actions">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }} className="landing-desktop-actions">
           {/* Interactive Theme Switcher Toggle */}
           <button
-            class={`theme-switch ${theme === 'dark' ? 'active' : ''}`}
+            className={`theme-switch ${theme === 'dark' ? 'active' : ''}`}
             onClick={() => setTheme && setTheme(theme === 'dark' ? 'light' : 'dark')}
             title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
             aria-label="Toggle Theme"
           >
-            <span class="theme-switch-track">
-              <span class="theme-switch-icon sun"><i class="ti ti-sun"></i></span>
-              <span class="theme-switch-icon moon"><i class="ti ti-moon"></i></span>
-              <span class="theme-switch-thumb"></span>
+            <span className="theme-switch-track">
+              <span className="theme-switch-icon sun"><i className="ti ti-sun"></i></span>
+              <span className="theme-switch-icon moon"><i className="ti ti-moon"></i></span>
+              <span className="theme-switch-thumb"></span>
             </span>
           </button>
 
-          <button class="btn btn-ghost" onClick={onNavigateLogin} style={{ borderRadius: '8px', padding: '8px 16px', color: 'var(--ink)' }}>
+          <button className="btn btn-ghost" onClick={onNavigateLogin} style={{ borderRadius: '8px', padding: '8px 16px', color: 'var(--ink)' }}>
             Sign in
           </button>
-          <button class="btn btn-primary" onClick={onNavigateSignup} style={{ borderRadius: '8px', padding: '8px 18px', boxShadow: '0 4px 14px rgba(36, 58, 43, 0.2)' }}>
+          <button className="btn btn-primary" onClick={onNavigateSignup} style={{ borderRadius: '8px', padding: '8px 18px', boxShadow: '0 4px 14px rgba(36, 58, 43, 0.2)' }}>
             Start reading free
           </button>
         </div>
 
         {/* Mobile Hamburger Button */}
         <button
-          class="landing-hamburger-btn"
+          className="landing-hamburger-btn"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           aria-label="Toggle Mobile Menu"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '6px 12px',
+            borderRadius: '8px',
+            border: '1.5px solid var(--gold)',
+            background: 'var(--parchment-deep)',
+            color: 'var(--ink)',
+            cursor: 'pointer'
+          }}
         >
-          <i class={mobileMenuOpen ? "ti ti-x" : "ti ti-menu-2"}></i>
+          {!mobileMenuOpen ? (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          ) : (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          )}
+          <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)' }}>Menu</span>
         </button>
 
         {/* Mobile Slide-Down Drawer Overlay */}
         {mobileMenuOpen && (
-          <div class="landing-mobile-drawer">
-            <a href="#hero-preview" class="landing-mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>
+          <div className="landing-mobile-drawer">
+            <a href="#hero-preview" className="landing-mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>
               📖 Canon Switcher
             </a>
-            <a href="#features" class="landing-mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>
+            <a href="#features" className="landing-mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>
               ✨ What's Inside
             </a>
-            <a href="#assistant-demo" class="landing-mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>
+            <a href="#assistant-demo" className="landing-mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>
               💡 AI Study Assistant
             </a>
-            <a href="#faq" class="landing-mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>
+            <a href="#faq" className="landing-mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>
               ❓ FAQ
             </a>
             
@@ -197,28 +220,28 @@ export default function LandingPage({ theme = 'light', setTheme, onNavigateLogin
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--line)' }}>
               <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--ink)' }}>🎨 App Mode:</span>
               <button
-                class={`theme-switch ${theme === 'dark' ? 'active' : ''}`}
+                className={`theme-switch ${theme === 'dark' ? 'active' : ''}`}
                 onClick={() => setTheme && setTheme(theme === 'dark' ? 'light' : 'dark')}
                 aria-label="Toggle Theme"
               >
-                <span class="theme-switch-track">
-                  <span class="theme-switch-icon sun"><i class="ti ti-sun"></i></span>
-                  <span class="theme-switch-icon moon"><i class="ti ti-moon"></i></span>
-                  <span class="theme-switch-thumb"></span>
+                <span className="theme-switch-track">
+                  <span className="theme-switch-icon sun"><i className="ti ti-sun"></i></span>
+                  <span className="theme-switch-icon moon"><i className="ti ti-moon"></i></span>
+                  <span className="theme-switch-thumb"></span>
                 </span>
               </button>
             </div>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '8px' }}>
               <button
-                class="btn btn-primary"
+                className="btn btn-primary"
                 onClick={() => { setMobileMenuOpen(false); onEnterApp(); }}
                 style={{ width: '100%', justifyContent: 'center', padding: '12px' }}
               >
-                Launch Reader App <i class="ti ti-arrow-right"></i>
+                Launch Reader App <i className="ti ti-arrow-right"></i>
               </button>
               <button
-                class="btn btn-ghost"
+                className="btn btn-ghost"
                 onClick={() => { setMobileMenuOpen(false); onNavigateLogin(); }}
                 style={{ width: '100%', justifyContent: 'center', padding: '10px', background: 'var(--bg-card)', color: 'var(--ink)' }}
               >
@@ -234,16 +257,16 @@ export default function LandingPage({ theme = 'light', setTheme, onNavigateLogin
         <div style={{ maxWidth: '820px', margin: '0 auto', position: 'relative', zIndex: 2 }}>
           
           {/* Illuminated Dropcap */}
-          <div class="dropcap-glow-container">
-            <div class="dropcap-orbit"></div>
-            <div class="dropcap-large" style={{ color: 'var(--gold)' }}>B</div>
+          <div className="dropcap-glow-container">
+            <div className="dropcap-orbit"></div>
+            <div className="dropcap-large" style={{ color: 'var(--gold)' }}>B</div>
           </div>
 
-          <div class="eyebrow" style={{ marginBottom: '12px' }}>
+          <div className="eyebrow" style={{ marginBottom: '12px' }}>
             ✨ For those who search the scriptures daily
           </div>
 
-          <h1 class="gradient-heading" style={{ fontSize: 'clamp(32px, 6.5vw, 52px)', lineHeight: 1.15, margin: '16px 0 20px', letterSpacing: '-0.02em', fontWeight: 600 }}>
+          <h1 className="gradient-heading" style={{ fontSize: 'clamp(32px, 6.5vw, 52px)', lineHeight: 1.15, margin: '16px 0 20px', letterSpacing: '-0.02em', fontWeight: 600 }}>
             The whole story, not just the sixty-six.
           </h1>
 
@@ -251,17 +274,17 @@ export default function LandingPage({ theme = 'light', setTheme, onNavigateLogin
             Scripture, the deuterocanon, and the writings history left out of most Bibles — one reverent, unhurried place to study, guided by a thoughtful assistant.
           </p>
 
-          <div class="hero-ctas-container" style={{ display: 'flex', gap: '14px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '44px' }}>
+          <div className="hero-ctas-container" style={{ display: 'flex', gap: '14px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '44px' }}>
             <button
-              class="btn btn-primary"
+              className="btn btn-primary"
               onClick={onEnterApp}
               style={{ fontSize: '15px', padding: '13px 26px', borderRadius: '10px', boxShadow: '0 6px 20px rgba(36, 58, 43, 0.25)' }}
             >
-              Launch Reader App <i class="ti ti-arrow-right" style={{ fontSize: '18px', marginLeft: '4px' }}></i>
+              Launch Reader App <i className="ti ti-arrow-right" style={{ fontSize: '18px', marginLeft: '4px' }}></i>
             </button>
 
             <a
-              class="btn btn-ghost"
+              className="btn btn-ghost"
               href="#hero-preview"
               style={{ fontSize: '15px', padding: '13px 24px', borderRadius: '10px', background: 'var(--bg-card)', color: 'var(--ink)', border: '1px solid var(--line-strong)' }}
             >
@@ -271,7 +294,7 @@ export default function LandingPage({ theme = 'light', setTheme, onNavigateLogin
 
           {/* Tradition Badges Strip */}
           <div
-            class="badges-strip-mobile"
+            className="badges-strip-mobile"
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -286,20 +309,20 @@ export default function LandingPage({ theme = 'light', setTheme, onNavigateLogin
             }}
           >
             <span style={{ fontWeight: 600, color: 'var(--ink)' }}>Canons:</span>
-            <span class="badge-canonical">Protestant (66)</span>
-            <span class="badge-deuterocanon">Catholic (73)</span>
-            <span class="badge-deuterocanon">Orthodox (76+)</span>
-            <span class="badge-deuterocanon">Ethiopian (81)</span>
+            <span className="badge-canonical">Protestant (66)</span>
+            <span className="badge-deuterocanon">Catholic (73)</span>
+            <span className="badge-deuterocanon">Orthodox (76+)</span>
+            <span className="badge-deuterocanon">Ethiopian (81)</span>
           </div>
         </div>
       </section>
 
       {/* Interactive Hero Canon Switcher Showcase */}
       <section id="hero-preview" style={{ padding: '20px 16px 64px', maxWidth: '1120px', margin: '0 auto' }}>
-        <div class="glass-panel" style={{ padding: '28px 20px' }}>
+        <div className="glass-panel" style={{ padding: '28px 20px' }}>
           
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-            <div class="eyebrow" style={{ marginBottom: '6px' }}>Interactive Tradition Switcher</div>
+            <div className="eyebrow" style={{ marginBottom: '6px' }}>Interactive Tradition Switcher</div>
             <h2 style={{ fontSize: 'clamp(22px, 4.5vw, 28px)', color: 'var(--ink)' }}>See How Canon Expands By Tradition</h2>
             <p style={{ color: 'var(--ink-soft)', fontSize: '14.5px', marginTop: '6px' }}>
               Select a historic tradition to view its canonical books and included Deuterocanon writings.
@@ -311,7 +334,7 @@ export default function LandingPage({ theme = 'light', setTheme, onNavigateLogin
             {Object.keys(CANON_DATA).map((key) => (
               <button
                 key={key}
-                class={`canon-tab-btn ${selectedCanon === key ? 'active' : ''}`}
+                className={`canon-tab-btn ${selectedCanon === key ? 'active' : ''}`}
                 onClick={() => setSelectedCanon(key)}
               >
                 {CANON_DATA[key].name} ({CANON_DATA[key].count})
@@ -321,7 +344,7 @@ export default function LandingPage({ theme = 'light', setTheme, onNavigateLogin
 
           {/* Canon Detail Box */}
           <div style={{ background: 'var(--parchment-deep)', borderRadius: '12px', padding: '20px', border: '1px solid var(--line)' }}>
-            <div class="canon-detail-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
+            <div className="canon-detail-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
               <div>
                 <h3 style={{ fontSize: '19px', color: 'var(--ink)', fontWeight: 600 }}>
                   {CANON_DATA[selectedCanon].name}
@@ -343,7 +366,7 @@ export default function LandingPage({ theme = 'light', setTheme, onNavigateLogin
                 {CANON_DATA[selectedCanon].sampleBooks.map((b, idx) => (
                   <span
                     key={idx}
-                    class={b.type === 'deuterocanon' ? 'badge-deuterocanon' : 'badge-canonical'}
+                    className={b.type === 'deuterocanon' ? 'badge-deuterocanon' : 'badge-canonical'}
                     style={{ padding: '5px 12px', fontSize: '12.5px', borderRadius: '8px' }}
                   >
                     📖 {b.name}
@@ -360,7 +383,7 @@ export default function LandingPage({ theme = 'light', setTheme, onNavigateLogin
         <div style={{ maxWidth: '1120px', margin: '0 auto' }}>
           
           <div style={{ textAlign: 'center', marginBottom: '36px' }}>
-            <div class="eyebrow" style={{ color: 'var(--gold)', marginBottom: '8px' }}>Product Experience</div>
+            <div className="eyebrow" style={{ color: 'var(--gold)', marginBottom: '8px' }}>Product Experience</div>
             <h2 style={{ fontSize: 'clamp(24px, 4.8vw, 34px)', color: 'var(--ink)' }}>Built For Reverent, Deep Scripture Study</h2>
             <p style={{ color: 'var(--ink-soft)', fontSize: '15px', maxWidth: '600px', margin: '8px auto 0' }}>
               Clean scripture pane paired with an intelligent historical AI assistant.
@@ -368,7 +391,7 @@ export default function LandingPage({ theme = 'light', setTheme, onNavigateLogin
           </div>
 
           {/* Mockup Frame */}
-          <div class="glass-panel" style={{ overflow: 'hidden', padding: 0 }}>
+          <div className="glass-panel" style={{ overflow: 'hidden', padding: 0 }}>
             
             {/* Top Bar Mockup */}
             <div style={{ padding: '12px 16px', background: 'var(--parchment-deep)', borderBottom: '1px solid var(--line)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
@@ -386,7 +409,7 @@ export default function LandingPage({ theme = 'light', setTheme, onNavigateLogin
             </div>
 
             {/* Responsive Split Screen Mockup */}
-            <div class="mockup-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 340px', minHeight: '360px' }}>
+            <div className="mockup-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 340px', minHeight: '360px' }}>
               
               {/* Left Pane: Scripture Text */}
               <div style={{ padding: '24px 20px', background: 'var(--bg-card)', color: 'var(--ink)' }}>
@@ -412,9 +435,9 @@ export default function LandingPage({ theme = 'light', setTheme, onNavigateLogin
               </div>
 
               {/* Right Pane: AI Assistant Mockup */}
-              <div class="mockup-assistant-pane" style={{ padding: '20px', background: 'var(--parchment-deep)', borderLeft: '1px solid var(--line)', display: 'flex', flexDirection: 'column' }}>
+              <div className="mockup-assistant-pane" style={{ padding: '20px', background: 'var(--parchment-deep)', borderLeft: '1px solid var(--line)', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gold)', fontSize: '13px', fontWeight: 600, marginBottom: '14px' }}>
-                  <i class="ti ti-sparkles"></i> Berea AI Assistant
+                  <i className="ti ti-sparkles"></i> Berea AI Assistant
                 </div>
 
                 {/* Interactive Mockup Tabs */}
@@ -457,7 +480,7 @@ export default function LandingPage({ theme = 'light', setTheme, onNavigateLogin
       {/* Feature Grid Section */}
       <section id="features" style={{ padding: '80px 16px', maxWidth: '1120px', margin: '0 auto' }}>
         <div style={{ textAlign: 'center', maxWidth: '600px', margin: '0 auto 48px' }}>
-          <div class="eyebrow" style={{ marginBottom: '8px' }}>Purposeful Capabilities</div>
+          <div className="eyebrow" style={{ marginBottom: '8px' }}>Purposeful Capabilities</div>
           <h2 style={{ fontSize: 'clamp(24px, 4.5vw, 34px)', color: 'var(--ink)' }}>Everything a Study Bible Has. Then Further.</h2>
           <p style={{ color: 'var(--ink-soft)', fontSize: '15px', marginTop: '8px' }}>
             Every tool is designed to deepen comprehension and reverence—never to gamify scripture reading.
@@ -466,7 +489,7 @@ export default function LandingPage({ theme = 'light', setTheme, onNavigateLogin
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
           
-          <div class="glass-panel" style={{ padding: '24px 20px' }}>
+          <div className="glass-panel" style={{ padding: '24px 20px' }}>
             <div style={{ fontFamily: 'var(--font-display)', fontSize: '13px', color: 'var(--gold)', fontWeight: 600, marginBottom: '10px' }}>I.</div>
             <h3 style={{ fontSize: '19px', color: 'var(--ink)', marginBottom: '8px' }}>Scripture, Done Properly</h3>
             <p style={{ fontSize: '14px', color: 'var(--ink-soft)', lineHeight: 1.6 }}>
@@ -474,7 +497,7 @@ export default function LandingPage({ theme = 'light', setTheme, onNavigateLogin
             </p>
           </div>
 
-          <div class="glass-panel" style={{ padding: '24px 20px' }}>
+          <div className="glass-panel" style={{ padding: '24px 20px' }}>
             <div style={{ fontFamily: 'var(--font-display)', fontSize: '13px', color: 'var(--gold)', fontWeight: 600, marginBottom: '10px' }}>II.</div>
             <h3 style={{ fontSize: '19px', color: 'var(--ink)', marginBottom: '8px' }}>Beyond the Standard Canon</h3>
             <p style={{ fontSize: '14px', color: 'var(--ink-soft)', lineHeight: 1.6 }}>
@@ -482,7 +505,7 @@ export default function LandingPage({ theme = 'light', setTheme, onNavigateLogin
             </p>
           </div>
 
-          <div class="glass-panel" style={{ padding: '24px 20px' }}>
+          <div className="glass-panel" style={{ padding: '24px 20px' }}>
             <div style={{ fontFamily: 'var(--font-display)', fontSize: '13px', color: 'var(--gold)', fontWeight: 600, marginBottom: '10px' }}>III.</div>
             <h3 style={{ fontSize: '19px', color: 'var(--ink)', marginBottom: '8px' }}>A Study Assistant, Not a Chatbot</h3>
             <p style={{ fontSize: '14px', color: 'var(--ink-soft)', lineHeight: 1.6 }}>
@@ -490,7 +513,7 @@ export default function LandingPage({ theme = 'light', setTheme, onNavigateLogin
             </p>
           </div>
 
-          <div class="glass-panel" style={{ padding: '24px 20px' }}>
+          <div className="glass-panel" style={{ padding: '24px 20px' }}>
             <div style={{ fontFamily: 'var(--font-display)', fontSize: '13px', color: 'var(--gold)', fontWeight: 600, marginBottom: '10px' }}>IV.</div>
             <h3 style={{ fontSize: '19px', color: 'var(--ink)', marginBottom: '8px' }}>Visual Lineages & Diagrams</h3>
             <p style={{ fontSize: '14px', color: 'var(--ink-soft)', lineHeight: 1.6 }}>
@@ -498,7 +521,7 @@ export default function LandingPage({ theme = 'light', setTheme, onNavigateLogin
             </p>
           </div>
 
-          <div class="glass-panel" style={{ padding: '24px 20px' }}>
+          <div className="glass-panel" style={{ padding: '24px 20px' }}>
             <div style={{ fontFamily: 'var(--font-display)', fontSize: '13px', color: 'var(--gold)', fontWeight: 600, marginBottom: '10px' }}>V.</div>
             <h3 style={{ fontSize: '19px', color: 'var(--ink)', marginBottom: '8px' }}>Verse-Anchored Study Notes</h3>
             <p style={{ fontSize: '14px', color: 'var(--ink-soft)', lineHeight: 1.6 }}>
@@ -506,7 +529,7 @@ export default function LandingPage({ theme = 'light', setTheme, onNavigateLogin
             </p>
           </div>
 
-          <div class="glass-panel" style={{ padding: '24px 20px' }}>
+          <div className="glass-panel" style={{ padding: '24px 20px' }}>
             <div style={{ fontFamily: 'var(--font-display)', fontSize: '13px', color: 'var(--gold)', fontWeight: 600, marginBottom: '10px' }}>VI.</div>
             <h3 style={{ fontSize: '19px', color: 'var(--ink)', marginBottom: '8px' }}>Audio & Offline Engine</h3>
             <p style={{ fontSize: '14px', color: 'var(--ink-soft)', lineHeight: 1.6 }}>
@@ -522,7 +545,7 @@ export default function LandingPage({ theme = 'light', setTheme, onNavigateLogin
         <div style={{ maxWidth: '920px', margin: '0 auto' }}>
           
           <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-            <div class="eyebrow" style={{ marginBottom: '6px' }}>Interactive AI Sandbox</div>
+            <div className="eyebrow" style={{ marginBottom: '6px' }}>Interactive AI Sandbox</div>
             <h2 style={{ fontSize: 'clamp(22px, 4.5vw, 30px)', color: 'var(--ink)' }}>Test How Berea AI Answers Complex Questions</h2>
             <p style={{ color: 'var(--ink-soft)', fontSize: '14.5px', marginTop: '6px' }}>
               Click any sample query below to preview how Berea synthesizes historical and canonical insights.
@@ -534,7 +557,7 @@ export default function LandingPage({ theme = 'light', setTheme, onNavigateLogin
             {SAMPLE_PROMPTS.map((prompt) => (
               <button
                 key={prompt.id}
-                class={`prompt-chip ${activePromptId === prompt.id ? 'active' : ''}`}
+                className={`prompt-chip ${activePromptId === prompt.id ? 'active' : ''}`}
                 onClick={() => setActivePromptId(prompt.id)}
               >
                 💡 {prompt.title.substring(0, 32)}...
@@ -543,8 +566,8 @@ export default function LandingPage({ theme = 'light', setTheme, onNavigateLogin
           </div>
 
           {/* Response Box */}
-          <div class="glass-panel" style={{ padding: '24px 20px', background: 'var(--bg-card)' }}>
-            <div class="prompt-response-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid var(--line)', paddingBottom: '10px' }}>
+          <div className="glass-panel" style={{ padding: '24px 20px', background: 'var(--bg-card)' }}>
+            <div className="prompt-response-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid var(--line)', paddingBottom: '10px' }}>
               <div style={{ fontWeight: 600, color: 'var(--ink)', fontSize: '15px' }}>
                 Question: "{activePrompt.title}"
               </div>
@@ -563,7 +586,7 @@ export default function LandingPage({ theme = 'light', setTheme, onNavigateLogin
       {/* FAQ Section */}
       <section id="faq" style={{ padding: '80px 16px', maxWidth: '840px', margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <div class="eyebrow" style={{ marginBottom: '6px' }}>Questions & Answers</div>
+          <div className="eyebrow" style={{ marginBottom: '6px' }}>Questions & Answers</div>
           <h2 style={{ fontSize: 'clamp(24px, 4.5vw, 32px)', color: 'var(--ink)' }}>Frequently Asked Questions</h2>
         </div>
 
@@ -573,7 +596,7 @@ export default function LandingPage({ theme = 'light', setTheme, onNavigateLogin
             return (
               <div
                 key={idx}
-                class="faq-card"
+                className="faq-card"
                 onClick={() => setOpenFaqIndex(isOpen ? -1 : idx)}
                 style={{ padding: '18px 20px' }}
               >
@@ -606,7 +629,7 @@ export default function LandingPage({ theme = 'light', setTheme, onNavigateLogin
           </p>
 
           <button
-            class="btn btn-primary"
+            className="btn btn-primary"
             onClick={onNavigateSignup}
             style={{ background: 'var(--gold)', color: '#2B2420', fontWeight: 600, fontSize: '15px', padding: '13px 28px', borderRadius: '10px', border: 'none', boxShadow: '0 6px 24px rgba(184, 134, 59, 0.3)', width: '100%', maxWidth: '320px' }}
           >

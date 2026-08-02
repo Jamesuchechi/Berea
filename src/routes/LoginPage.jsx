@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { signInWithGoogle } from '../services/authService';
 
 export default function LoginPage({ onNavigateLanding, onNavigateSignup, onEnterApp }) {
   const [email, setEmail] = useState('');
@@ -11,10 +12,10 @@ export default function LoginPage({ onNavigateLanding, onNavigateSignup, onEnter
   };
 
   return (
-    <div class="auth-container">
+    <div className="auth-container">
       {/* Read-Only Info Pane (60% Desktop) */}
-      <div class="auth-info-pane">
-        <div class="auth-info-glow"></div>
+      <div className="auth-info-pane">
+        <div className="auth-info-glow"></div>
 
         {/* Top Header & Back Button */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 2 }}>
@@ -28,14 +29,14 @@ export default function LoginPage({ onNavigateLanding, onNavigateSignup, onEnter
             </span>
           </div>
 
-          <button class="auth-back-btn-dark" onClick={onNavigateLanding}>
+          <button className="auth-back-btn-dark" onClick={onNavigateLanding}>
             ← Back to Home
           </button>
         </div>
 
         {/* Middle Main Content */}
         <div style={{ maxWidth: '580px', margin: '40px 0', zIndex: 2 }}>
-          <div class="eyebrow" style={{ color: 'var(--gold)', marginBottom: '8px' }}>
+          <div className="eyebrow" style={{ color: 'var(--gold)', marginBottom: '8px' }}>
             Return To Scripture Study
           </div>
           
@@ -48,7 +49,7 @@ export default function LoginPage({ onNavigateLanding, onNavigateSignup, onEnter
           </p>
 
           {/* Acts 17:11 Quote Card */}
-          <div class="auth-quote-box">
+          <div className="auth-quote-box">
             <div style={{ fontFamily: 'var(--font-display)', fontSize: '42px', color: 'var(--gold)', lineHeight: 0.8, marginBottom: '12px' }}>
               “
             </div>
@@ -62,7 +63,7 @@ export default function LoginPage({ onNavigateLanding, onNavigateSignup, onEnter
 
           {/* Feature Bullets */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px', marginTop: '32px' }}>
-            <div class="auth-feature-pill">
+            <div className="auth-feature-pill">
               <span style={{ fontSize: '18px' }}>📚</span>
               <div>
                 <strong style={{ display: 'block', color: '#fff', marginBottom: '2px' }}>4 Historic Canons</strong>
@@ -70,7 +71,7 @@ export default function LoginPage({ onNavigateLanding, onNavigateSignup, onEnter
               </div>
             </div>
 
-            <div class="auth-feature-pill">
+            <div className="auth-feature-pill">
               <span style={{ fontSize: '18px' }}>💡</span>
               <div>
                 <strong style={{ display: 'block', color: '#fff', marginBottom: '2px' }}>Berea AI Partner</strong>
@@ -87,11 +88,11 @@ export default function LoginPage({ onNavigateLanding, onNavigateSignup, onEnter
       </div>
 
       {/* Form Pane (40% Desktop) */}
-      <div class="auth-form-pane">
+      <div className="auth-form-pane">
         
         {/* Mobile / Top Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
-          <button class="auth-back-btn" onClick={onNavigateLanding}>
+          <button className="auth-back-btn" onClick={onNavigateLanding}>
             ← Back to Home
           </button>
 
@@ -114,7 +115,13 @@ export default function LoginPage({ onNavigateLanding, onNavigateSignup, onEnter
 
           {/* Social Sign-In Button (Google Only) */}
           <div style={{ marginBottom: '24px' }}>
-            <button class="social-auth-btn" type="button" onClick={onEnterApp}>
+            <button className="social-auth-btn" type="button" onClick={async () => {
+              try {
+                await signInWithGoogle();
+              } catch (err) {
+                console.error("Google sign in error:", err);
+              }
+            }}>
               <svg width="18" height="18" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -190,13 +197,13 @@ export default function LoginPage({ onNavigateLanding, onNavigateSignup, onEnter
                   onClick={() => setShowPassword(!showPassword)}
                   style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--ink-soft)', cursor: 'pointer', fontSize: '16px' }}
                 >
-                  <i class={showPassword ? "ti ti-eye-off" : "ti ti-eye"}></i>
+                  <i className={showPassword ? "ti ti-eye-off" : "ti ti-eye"}></i>
                 </button>
               </div>
             </div>
 
-            <button type="submit" class="btn btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '12px', borderRadius: '8px', fontSize: '15px', fontWeight: 600 }}>
-              Sign In to Berea <i class="ti ti-arrow-right" style={{ marginLeft: '4px' }}></i>
+            <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '12px', borderRadius: '8px', fontSize: '15px', fontWeight: 600 }}>
+              Sign In to Berea <i className="ti ti-arrow-right" style={{ marginLeft: '4px' }}></i>
             </button>
           </form>
         </div>

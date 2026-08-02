@@ -117,8 +117,9 @@ button {
 .app {
   display: grid;
   grid-template-columns: 220px 1fr 300px;
-  grid-template-rows: 56px 1fr;
+  grid-template-rows: 56px calc(100vh - 56px);
   height: 100vh;
+  max-height: 100vh;
   overflow: hidden;
 }
 
@@ -259,6 +260,8 @@ select.chip {
   flex-direction: column;
   justify-content: space-between;
   overflow-y: auto;
+  height: 100%;
+  min-height: 0;
 }
 
 .nav-group {
@@ -313,7 +316,11 @@ select.chip {
 /* Reader */
 .reader {
   overflow-y: auto;
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
   padding: 36px 48px;
+  box-sizing: border-box;
 }
 
 .reader-inner {
@@ -694,16 +701,16 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   top: 100%;
   left: 0;
   right: 0;
-  background: rgba(251, 246, 236, 0.98);
+  background: var(--bg-card);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--line-strong);
+  border-bottom: 2px solid var(--gold);
   padding: 20px 24px;
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
   gap: 16px;
-  z-index: 99;
+  z-index: 999;
   animation: slideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -714,10 +721,18 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 
 .landing-mobile-nav-link {
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--ink);
-  padding: 10px 0;
-  border-bottom: 1px solid var(--line);
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line-strong);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.landing-mobile-nav-link:hover {
+  color: var(--gold);
 }
 
 /* Mobile Responsive Breakpoints */

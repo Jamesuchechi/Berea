@@ -16,24 +16,24 @@ export default function Topbar({
   const isDark = theme === 'dark';
 
   return (
-    <header class="topbar">
-      <div class="topbar-left">
+    <header className="topbar">
+      <div className="topbar-left">
         <button
-          class="icon-btn hamburger"
+          className="icon-btn hamburger"
           onClick={() => setSidebarOpen(!sidebarOpen)}
           aria-label="Open menu"
         >
-          <i class="ti ti-menu-2"></i>
+          <i className="ti ti-menu-2"></i>
         </button>
-        <div class="brand-container" onClick={onNavigateLanding}>
-          <img src="/berea_logo.png" alt="Berea Logo" class="brand-logo-img" />
-          <span class="brand">Berea</span>
+        <div className="brand-container" onClick={onNavigateLanding}>
+          <img src="/berea_logo.png" alt="Berea Logo" className="brand-logo-img" />
+          <span className="brand">Berea</span>
         </div>
-        <div class="crumb">John <b>3</b></div>
+        <div className="crumb">John <b>3</b></div>
       </div>
-      <div class="topbar-mid">
+      <div className="topbar-mid">
         <select
-          class="chip"
+          className="chip"
           aria-label="Translation"
           value={translation}
           onChange={(e) => setTranslation(e.target.value)}
@@ -43,7 +43,7 @@ export default function Topbar({
           <option value="WEB">WEB</option>
         </select>
         <select
-          class="chip"
+          className="chip"
           aria-label="Tradition"
           value={tradition}
           onChange={(e) => setTradition(e.target.value)}
@@ -56,30 +56,30 @@ export default function Topbar({
 
         {/* Interactive Theme Switcher Toggle */}
         <button
-          class={`theme-switch ${isDark ? 'active' : ''}`}
+          className={`theme-switch ${isDark ? 'active' : ''}`}
           onClick={() => setTheme && setTheme(isDark ? 'light' : 'dark')}
           title={`Switch to ${isDark ? 'Light' : 'Dark'} Mode`}
           aria-label="Toggle Theme"
         >
-          <span class="theme-switch-track">
-            <span class="theme-switch-icon sun"><i class="ti ti-sun"></i></span>
-            <span class="theme-switch-icon moon"><i class="ti ti-moon"></i></span>
-            <span class="theme-switch-thumb"></span>
+          <span className="theme-switch-track">
+            <span className="theme-switch-icon sun"><i className="ti ti-sun"></i></span>
+            <span className="theme-switch-icon moon"><i className="ti ti-moon"></i></span>
+            <span className="theme-switch-thumb"></span>
           </span>
         </button>
       </div>
-      <div class="topbar-right">
-        <button class="icon-btn" aria-label="Search">
-          <i class="ti ti-search"></i>
+      <div className="topbar-right">
+        <button className="icon-btn" aria-label="Search">
+          <i className="ti ti-search"></i>
         </button>
         <button
-          class="icon-btn"
+          className="icon-btn"
           onClick={() => setAssistantOpen(!assistantOpen)}
           aria-label="Toggle assistant"
         >
-          <i class="ti ti-sparkles"></i>
+          <i className="ti ti-sparkles"></i>
         </button>
-        <div class="avatar" title="Account">JU</div>
+        <div className="avatar" title="Account">JU</div>
       </div>
     </header>
   );

@@ -12,8 +12,8 @@ export default function SearchView() {
   };
 
   return (
-    <main class="reader" style={{ background: 'var(--parchment)', color: 'var(--ink)' }}>
-      <div class="reader-inner" style={{ maxWidth: '760px', margin: '0 auto' }}>
+    <main className="reader" style={{ background: 'var(--parchment)', color: 'var(--ink)' }}>
+      <div className="reader-inner" style={{ maxWidth: '760px', margin: '0 auto' }}>
         
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
           <h2 style={{ fontSize: '28px', color: 'var(--ink)', fontWeight: 600 }}>Scripture & History Search</h2>
@@ -43,7 +43,7 @@ export default function SearchView() {
 
           <button
             type="submit"
-            class="btn btn-primary"
+            className="btn btn-primary"
             style={{ padding: '12px 24px', borderRadius: '10px', fontSize: '15px', fontWeight: 600 }}
           >
             🔍 Search
@@ -65,7 +65,7 @@ export default function SearchView() {
             results.map((res, idx) => (
               <div
                 key={idx}
-                class="card"
+                className="card"
                 style={{
                   background: 'var(--bg-card)',
                   border: '1px solid var(--line-strong)',

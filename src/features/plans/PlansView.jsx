@@ -34,12 +34,35 @@ export default function PlansView() {
   const [plans, setPlans] = useState(PLANS);
   const [activePlanId, setActivePlanId] = useState('chronological');
   const [completedToday, setCompletedToday] = useState(false);
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [aiGoal, setAiGoal] = useState('');
+  const [aiDays, setAiDays] = useState(30);
 
   const activePlan = plans.find(p => p.id === activePlanId) || plans[0];
 
+  const handleGeneratePlan = (e) => {
+    e.preventDefault();
+    if (!aiGoal.trim()) return;
+
+    const newPlan = {
+      id: `ai-${Date.now()}`,
+      title: `${aiDays}-Day AI Plan: ${aiGoal}`,
+      category: 'AI Personalized',
+      duration: `${aiDays} Days`,
+      progress: 0,
+      todayReading: `Day 1: ${aiGoal} Introduction & Readings`,
+      description: `Custom AI-generated reading schedule tailored for ${aiDays} days on "${aiGoal}".`
+    };
+
+    setPlans([newPlan, ...plans]);
+    setActivePlanId(newPlan.id);
+    setShowAiModal(false);
+    setAiGoal('');
+  };
+
   return (
-    <main class="reader" style={{ background: 'var(--parchment)', color: 'var(--ink)' }}>
-      <div class="reader-inner" style={{ maxWidth: '780px', margin: '0 auto' }}>
+    <main className="reader" style={{ background: 'var(--parchment)', color: 'var(--ink)' }}>
+      <div className="reader-inner" style={{ maxWidth: '780px', margin: '0 auto' }}>
         
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
           <div>
@@ -50,16 +73,67 @@ export default function PlansView() {
           </div>
 
           <button
-            class="btn btn-primary"
-            onClick={() => alert("AI Custom Plan Generator: Enter your study goal (e.g. '30 days on Wisdom literature') and Berea AI will generate your personalized schedule!")}
+            className="btn btn-primary"
+            onClick={() => setShowAiModal(!showAiModal)}
             style={{ fontSize: '13px', padding: '8px 16px' }}
           >
             ✨ Generate AI Plan
           </button>
         </div>
 
+        {/* AI Plan Generator Card */}
+        {showAiModal && (
+          <form onSubmit={handleGeneratePlan} style={{ background: 'var(--parchment-deep)', border: '2px solid var(--gold)', borderRadius: '14px', padding: '20px', marginBottom: '28px' }}>
+            <h3 style={{ fontSize: '18px', color: 'var(--ink)', fontWeight: 600, marginBottom: '8px' }}>
+              ✨ Generate AI Personalized Reading Plan
+            </h3>
+            <p style={{ fontSize: '13.5px', color: 'var(--ink-soft)', marginBottom: '16px' }}>
+              Tell Berea AI what topic, theme, or book series you want to study.
+            </p>
+
+            <div style={{ marginBottom: '14px' }}>
+              <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 600, color: 'var(--ink)', marginBottom: '4px' }}>
+                Study Goal / Topic:
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="e.g., 'Wisdom in Sirach & James' or 'Prophecies in Isaiah & Revelation'"
+                value={aiGoal}
+                onChange={(e) => setAiGoal(e.target.value)}
+                style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--line-strong)', background: 'var(--bg-card)', color: 'var(--ink)', fontSize: '13.5px', outline: 'none' }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '18px' }}>
+              <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 600, color: 'var(--ink)', marginBottom: '4px' }}>
+                Plan Duration (Days):
+              </label>
+              <select
+                value={aiDays}
+                onChange={(e) => setAiDays(Number(e.target.value))}
+                style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--line-strong)', background: 'var(--bg-card)', color: 'var(--ink)', fontSize: '13.5px', outline: 'none' }}
+              >
+                <option value={7}>7 Days (Short Intensive)</option>
+                <option value={14}>14 Days (Two-Week Study)</option>
+                <option value={30}>30 Days (Monthly Journey)</option>
+                <option value={40}>40 Days (Lenten / Fasting Journey)</option>
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button type="button" className="btn btn-ghost" onClick={() => setShowAiModal(false)} style={{ fontSize: '13px' }}>
+                Cancel
+              </button>
+              <button type="submit" className="btn btn-primary" style={{ fontSize: '13px', padding: '8px 18px' }}>
+                Build AI Schedule
+              </button>
+            </div>
+          </form>
+        )}
+
         {/* Active Today Reading Card */}
-        <div class="card" style={{ background: 'var(--parchment-deep)', border: '2px solid var(--gold)', borderRadius: '16px', padding: '24px', marginBottom: '32px' }}>
+        <div className="card" style={{ background: 'var(--parchment-deep)', border: '2px solid var(--gold)', borderRadius: '16px', padding: '24px', marginBottom: '32px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
             <span style={{ fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--gold)', fontWeight: 700 }}>
               TODAY'S READING ASSIGNMENT
@@ -106,7 +180,7 @@ export default function PlansView() {
               gap: '8px'
             }}
           >
-            <i class={completedToday ? "ti ti-circle-check" : "ti ti-check"}></i>
+            <i className={completedToday ? "ti ti-circle-check" : "ti ti-check"}></i>
             {completedToday ? "Completed Today's Reading! 🎉" : "Mark Today's Reading Complete"}
           </button>
         </div>
@@ -120,7 +194,7 @@ export default function PlansView() {
           {plans.map((p) => (
             <div
               key={p.id}
-              class="card"
+              className="card"
               onClick={() => setActivePlanId(p.id)}
               style={{
                 background: 'var(--bg-card)',

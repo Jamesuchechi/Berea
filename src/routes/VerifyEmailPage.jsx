@@ -46,10 +46,10 @@ export default function VerifyEmailPage({ email = 'user@example.com', onNavigate
   };
 
   return (
-    <div class="auth-container">
+    <div className="auth-container">
       {/* Read-Only Info Pane (60% Desktop) */}
-      <div class="auth-info-pane">
-        <div class="auth-info-glow"></div>
+      <div className="auth-info-pane">
+        <div className="auth-info-glow"></div>
 
         {/* Top Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 2 }}>
@@ -60,14 +60,14 @@ export default function VerifyEmailPage({ email = 'user@example.com', onNavigate
             </span>
           </div>
 
-          <button class="auth-back-btn-dark" onClick={onNavigateLanding}>
+          <button className="auth-back-btn-dark" onClick={onNavigateLanding}>
             ← Back to Home
           </button>
         </div>
 
         {/* Middle Main Info */}
         <div style={{ maxWidth: '580px', margin: '40px 0', zIndex: 2 }}>
-          <div class="eyebrow" style={{ color: 'var(--gold)', marginBottom: '8px' }}>
+          <div className="eyebrow" style={{ color: 'var(--gold)', marginBottom: '8px' }}>
             Account Verification
           </div>
 
@@ -81,7 +81,7 @@ export default function VerifyEmailPage({ email = 'user@example.com', onNavigate
 
           {/* Dual Verification Method Feature Card */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            <div class="auth-feature-pill">
+            <div className="auth-feature-pill">
               <span style={{ fontSize: '20px' }}>✉️</span>
               <div>
                 <strong style={{ display: 'block', color: '#fff', marginBottom: '2px' }}>Option A: Click Magic Link</strong>
@@ -89,7 +89,7 @@ export default function VerifyEmailPage({ email = 'user@example.com', onNavigate
               </div>
             </div>
 
-            <div class="auth-feature-pill">
+            <div className="auth-feature-pill">
               <span style={{ fontSize: '20px' }}>🔢</span>
               <div>
                 <strong style={{ display: 'block', color: '#fff', marginBottom: '2px' }}>Option B: Enter 6-Digit Code</strong>
@@ -106,11 +106,11 @@ export default function VerifyEmailPage({ email = 'user@example.com', onNavigate
       </div>
 
       {/* Form Pane (40% Desktop) */}
-      <div class="auth-form-pane">
+      <div className="auth-form-pane">
         
         {/* Top Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
-          <button class="auth-back-btn" onClick={onNavigateLogin}>
+          <button className="auth-back-btn" onClick={onNavigateLogin}>
             ← Back to Sign in
           </button>
         </div>
@@ -156,10 +156,10 @@ export default function VerifyEmailPage({ email = 'user@example.com', onNavigate
             <button
               type="submit"
               disabled={loading}
-              class="btn btn-primary"
+              className="btn btn-primary"
               style={{ width: '100%', justifyContent: 'center', padding: '12px', borderRadius: '8px', fontSize: '15px', fontWeight: 600, marginBottom: '20px' }}
             >
-              {loading ? "Verifying Code..." : "Verify & Continue to App"} <i class="ti ti-arrow-right" style={{ marginLeft: '4px' }}></i>
+              {loading ? "Verifying Code..." : "Verify & Continue to App"} <i className="ti ti-arrow-right" style={{ marginLeft: '4px' }}></i>
             </button>
           </form>
 
