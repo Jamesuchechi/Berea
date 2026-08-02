@@ -7,7 +7,12 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      includeAssets: ['favicon.ico', 'icon-192.png', 'icon-512.png', 'berea_logo.png'],
+      // Inject modern mobile meta tags (replaces deprecated apple-mobile-web-app-capable)
+      injectManifest: false,
+      devOptions: {
+        enabled: false  // Disable SW in dev to avoid MIME type noise
+      },
       manifest: {
         name: 'Berea — Christian Study App',
         short_name: 'Berea',
@@ -15,16 +20,19 @@ export default defineConfig({
         theme_color: '#243A2B',
         background_color: '#FBF6EC',
         display: 'standalone',
+        start_url: '/',
         icons: [
           {
-            src: 'pwa-192x192.png',
+            src: '/icon-192.png',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any maskable'
           },
           {
-            src: 'pwa-512x512.png',
+            src: '/icon-512.png',
             sizes: '512x512',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any maskable'
           }
         ]
       }

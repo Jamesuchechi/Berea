@@ -11,9 +11,17 @@ export default function Topbar({
   setSidebarOpen,
   assistantOpen,
   setAssistantOpen,
-  onNavigateLanding
+  onNavigateLanding,
+  onLogout,
+  // Reader navigation
+  currentBook = null,
+  currentChapter = null,
+  onOpenBookPicker = null
 }) {
   const isDark = theme === 'dark';
+
+  const bookLabel = currentBook ? currentBook.title : 'Select Book';
+  const chapterLabel = currentChapter ? String(currentChapter) : '';
 
   return (
     <header className="topbar">
@@ -23,38 +31,65 @@ export default function Topbar({
           onClick={() => setSidebarOpen(!sidebarOpen)}
           aria-label="Open menu"
         >
-          <i className="ti ti-menu-2"></i>
+          <i className="ti ti-menu-2" />
         </button>
-        <div className="brand-container" onClick={onNavigateLanding}>
+        <div className="brand-container" onClick={onNavigateLanding} style={{ cursor: 'pointer' }}>
           <img src="/berea_logo.png" alt="Berea Logo" className="brand-logo-img" />
           <span className="brand">Berea</span>
         </div>
-        <div className="crumb">John <b>3</b></div>
+
+        {/* Live Breadcrumb — clickable to open book picker */}
+        <button
+          className="crumb"
+          onClick={onOpenBookPicker}
+          title="Change book & chapter"
+          aria-label={`Currently reading ${bookLabel} ${chapterLabel}. Click to change.`}
+          style={{
+            background: 'none', border: 'none', cursor: onOpenBookPicker ? 'pointer' : 'default',
+            padding: '4px 8px', borderRadius: '6px', fontFamily: 'inherit',
+            transition: 'background 0.15s ease'
+          }}
+          onMouseEnter={e => { if (onOpenBookPicker) e.currentTarget.style.background = 'var(--parchment-deep)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'none'; }}
+        >
+          {bookLabel}
+          {chapterLabel && (
+            <> <b>{chapterLabel}</b></>
+          )}
+          {onOpenBookPicker && (
+            <i className="ti ti-chevron-down" style={{ fontSize: '11px', marginLeft: '3px', opacity: 0.6 }} />
+          )}
+        </button>
       </div>
+
       <div className="topbar-mid">
         <select
           className="chip"
-          aria-label="Translation"
+          aria-label="Bible Translation"
           value={translation}
           onChange={(e) => setTranslation(e.target.value)}
         >
-          <option value="ESV">ESV</option>
           <option value="KJV">KJV</option>
           <option value="WEB">WEB</option>
+          <option value="ASV">ASV</option>
+          <option value="YLT">YLT</option>
+          <option value="DARBY">Darby</option>
+          <option value="NET">NET</option>
         </select>
+
         <select
           className="chip"
-          aria-label="Tradition"
+          aria-label="Tradition / Canon"
           value={tradition}
           onChange={(e) => setTradition(e.target.value)}
         >
-          <option value="Protestant">Protestant</option>
-          <option value="Catholic">Catholic</option>
-          <option value="Orthodox">Orthodox</option>
-          <option value="Ethiopian">Ethiopian</option>
+          <option value="protestant">Protestant (66)</option>
+          <option value="catholic">Catholic (73)</option>
+          <option value="orthodox">Orthodox (76+)</option>
+          <option value="ethiopian">Ethiopian (81+)</option>
         </select>
 
-        {/* Interactive Theme Switcher Toggle */}
+        {/* Theme Toggle */}
         <button
           className={`theme-switch ${isDark ? 'active' : ''}`}
           onClick={() => setTheme && setTheme(isDark ? 'light' : 'dark')}
@@ -62,22 +97,23 @@ export default function Topbar({
           aria-label="Toggle Theme"
         >
           <span className="theme-switch-track">
-            <span className="theme-switch-icon sun"><i className="ti ti-sun"></i></span>
-            <span className="theme-switch-icon moon"><i className="ti ti-moon"></i></span>
-            <span className="theme-switch-thumb"></span>
+            <span className="theme-switch-icon sun"><i className="ti ti-sun" /></span>
+            <span className="theme-switch-icon moon"><i className="ti ti-moon" /></span>
+            <span className="theme-switch-thumb" />
           </span>
         </button>
       </div>
+
       <div className="topbar-right">
         <button className="icon-btn" aria-label="Search">
-          <i className="ti ti-search"></i>
+          <i className="ti ti-search" />
         </button>
         <button
           className="icon-btn"
           onClick={() => setAssistantOpen(!assistantOpen)}
           aria-label="Toggle assistant"
         >
-          <i className="ti ti-sparkles"></i>
+          <i className="ti ti-sparkles" />
         </button>
         <div className="avatar" title="Account">JU</div>
       </div>

@@ -1,49 +1,115 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { getChapterPassage } from '../../services/bibleService';
+import { getBookBySlug, getChapterCount } from '../../data/canonMetadata';
+import BookPickerModal from './BookPickerModal';
+import ChapterPickerModal from './ChapterPickerModal';
 
-const PASSAGES = {
-  'John 3': {
-    book: 'John',
-    chapter: 3,
-    testament: 'New Testament',
-    verses: [
-      { num: 1, text: 'Now there was a man of the Pharisees named Nicodemus, a ruler of the Jews.' },
-      { num: 2, text: 'This man came to Jesus by night and said to him, "Rabbi, we know that you are a teacher come from God, for no one can do these signs that you do unless God is with him."' },
-      { num: 3, text: 'Jesus answered him, "Truly, truly, I say to you, unless one is born again he cannot see the kingdom of God."' },
-      { num: 14, text: 'And as Moses lifted up the serpent in the wilderness, even so must the Son of Man be lifted up,', xref: 'a' },
-      { num: 15, text: 'that whoever believes in him may have eternal life.', xref: 'b' },
-      { num: 16, text: 'For God so loved the world, that he gave his only Son, that whoever believes in him should not perish but have eternal life.', xref: 'c' },
-      { num: 17, text: 'For God did not send his Son into the world to condemn the world, but in order that the world might be saved through him.' }
-    ]
-  },
-  'Tobit 1': {
-    book: 'Tobit',
-    chapter: 1,
-    testament: 'Deuterocanon',
-    verses: [
-      { num: 1, text: 'The book of the words of Tobit son of Tobiel, son of Ananiel, son of Aduel, son of Gabael, of the descendants of Asiel, of the tribe of Naphtali,' },
-      { num: 2, text: 'who in the days of King Shalmaneser of the Assyrians was taken into captivity from Thisbe, which is to the south of Kedesh Naphtali in Upper Galilee.' },
-      { num: 3, text: 'I, Tobit, walked in the ways of truth and righteousness all the days of my life, and I performed many acts of charity for my kindred.' }
-    ]
-  },
-  '1 Enoch 1': {
-    book: '1 Enoch',
-    chapter: 1,
-    testament: 'Pseudepigrapha / Ethiopian Canon',
-    verses: [
-      { num: 1, text: 'The words of the blessing of Enoch, wherewith he blessed the elect and righteous, who will be living in the day of tribulation, when all the wicked and godless are to be removed.' },
-      { num: 9, text: 'And behold! He cometh with ten thousands of His holy ones to execute judgment upon all, and to destroy all the ungodly.', xref: 'Jude 1:14' }
-    ]
-  }
-};
+// Default opening passage
+const DEFAULT_BOOK_SLUG = 'john';
+const DEFAULT_CHAPTER = 3;
 
-export default function ReaderView({ translation = 'ESV', tradition = 'Protestant' }) {
-  const [selectedPassageKey, setSelectedPassageKey] = useState('John 3');
-  const [activeVerse, setActiveVerse] = useState(16);
+export default function ReaderView({
+  translation = 'KJV',
+  tradition = 'protestant',
+  // Breadcrumb callback to keep Topbar in sync
+  onNavigationChange = null,
+  // Triggered from Topbar breadcrumb click
+  triggerOpenPicker = false,
+  onPickerOpened = null
+}) {
+  const [selectedBook, setSelectedBook] = useState(() => getBookBySlug(DEFAULT_BOOK_SLUG));
+  const [selectedChapter, setSelectedChapter] = useState(DEFAULT_CHAPTER);
+  const [passage, setPassage] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Modal state
+  const [showBookPicker, setShowBookPicker] = useState(false);
+  const [showChapterPicker, setShowChapterPicker] = useState(false);
+
+  // Reader interactions
+  const [activeVerse, setActiveVerse] = useState(null);
+  const [highlightedVerses, setHighlightedVerses] = useState([]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState('1.0x');
-  const [highlightedVerses, setHighlightedVerses] = useState([16]);
+  const [fontSize, setFontSize] = useState(20);
 
-  const currentPassage = PASSAGES[selectedPassageKey] || PASSAGES['John 3'];
+  // Open book picker when Topbar breadcrumb is clicked
+  useEffect(() => {
+    if (triggerOpenPicker) {
+      setShowBookPicker(true);
+      if (onPickerOpened) onPickerOpened();
+    }
+  }, [triggerOpenPicker]);
+
+  // Load chapter whenever book, chapter, or translation changes
+  useEffect(() => {
+    if (!selectedBook) return;
+    let cancelled = false;
+
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      setPassage(null);
+
+      try {
+        const data = await getChapterPassage(selectedBook.slug, selectedChapter, translation);
+        if (!cancelled) {
+          setPassage(data);
+          // Notify parent of navigation change for breadcrumb update
+          if (onNavigationChange) {
+            onNavigationChange({ book: selectedBook, chapter: selectedChapter });
+          }
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError('Unable to load this passage. Please check your connection and try again.');
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    load();
+    return () => { cancelled = true; };
+  }, [selectedBook?.slug, selectedChapter, translation]);
+
+  const handleSelectBook = useCallback((book) => {
+    setSelectedBook(book);
+    setShowBookPicker(false);
+    setShowChapterPicker(true);
+    setHighlightedVerses([]);
+    setActiveVerse(null);
+  }, []);
+
+  const handleSelectChapter = useCallback((ch) => {
+    setSelectedChapter(ch);
+    setShowChapterPicker(false);
+    setHighlightedVerses([]);
+    setActiveVerse(null);
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  const openBookPicker = () => {
+    setShowBookPicker(true);
+    setShowChapterPicker(false);
+  };
+
+  const goToPrevChapter = () => {
+    if (selectedChapter > 1) {
+      setSelectedChapter(c => c - 1);
+      setActiveVerse(null);
+    }
+  };
+
+  const goToNextChapter = () => {
+    const maxChapters = selectedBook ? getChapterCount(selectedBook.slug) : 1;
+    if (selectedChapter < maxChapters) {
+      setSelectedChapter(c => c + 1);
+      setActiveVerse(null);
+    }
+  };
 
   const toggleHighlight = (num) => {
     setHighlightedVerses(prev =>
@@ -51,132 +117,420 @@ export default function ReaderView({ translation = 'ESV', tradition = 'Protestan
     );
   };
 
+  const maxChapters = selectedBook ? getChapterCount(selectedBook.slug) : 1;
+  const hasPrev = selectedChapter > 1;
+  const hasNext = selectedChapter < maxChapters;
+
+  const testamentAccent = {
+    'OT': 'var(--gold)',
+    'NT': '#3b82f6',
+    'Deuterocanon': '#10b981',
+    'Anagignoskomena': '#6366f1',
+    'Ethiopian Canon': '#8b5cf6',
+    'Early Church': '#f59e0b'
+  };
+  const accentColor = selectedBook ? (testamentAccent[selectedBook.testament] || 'var(--gold)') : 'var(--gold)';
+
   return (
-    <main className="reader" style={{ background: 'var(--parchment)', color: 'var(--ink)' }}>
-      <div className="reader-inner" style={{ maxWidth: '680px', margin: '0 auto' }}>
-        
-        {/* Quick Chapter Selector Toolbar */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '24px', paddingBottom: '14px', borderBottom: '1px solid var(--line)' }}>
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            {Object.keys(PASSAGES).map((key) => (
-              <button
-                key={key}
-                onClick={() => setSelectedPassageKey(key)}
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: '999px',
-                  fontSize: '12.5px',
-                  fontWeight: 600,
-                  border: '1px solid var(--line-strong)',
-                  background: selectedPassageKey === key ? 'var(--moss)' : 'var(--bg-card)',
-                  color: selectedPassageKey === key ? '#fff' : 'var(--ink)',
-                  cursor: 'pointer'
-                }}
-              >
-                📖 {key}
-              </button>
-            ))}
-          </div>
+    <>
+      {/* ── Modals ── */}
+      {showBookPicker && (
+        <BookPickerModal
+          tradition={tradition}
+          onSelectBook={handleSelectBook}
+          onClose={() => setShowBookPicker(false)}
+        />
+      )}
+      {showChapterPicker && selectedBook && (
+        <ChapterPickerModal
+          book={selectedBook}
+          onSelectChapter={handleSelectChapter}
+          onBack={() => { setShowChapterPicker(false); setShowBookPicker(true); }}
+          onClose={() => setShowChapterPicker(false)}
+        />
+      )}
 
-          <div style={{ fontSize: '12px', background: 'var(--parchment-deep)', padding: '4px 10px', borderRadius: '6px', border: '1px solid var(--line-strong)', color: 'var(--gold)', fontWeight: 600 }}>
-            {translation} • {tradition} Lens
-          </div>
-        </div>
+      {/* ── Main Reader ── */}
+      <main className="reader" style={{ background: 'var(--parchment)', color: 'var(--ink)' }}>
+        <div className="reader-inner" style={{ maxWidth: '680px', margin: '0 auto', paddingBottom: '80px' }}>
 
-        {/* Passage Eyebrow */}
-        <div className="ref-eyebrow" style={{ fontSize: '13px', color: 'var(--gold)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '12px', fontWeight: 600 }}>
-          {currentPassage.testament} • {currentPassage.book} Chapter {currentPassage.chapter}
-        </div>
-
-        {/* Verses Reading Display */}
-        <div className="verse" style={{ fontFamily: 'var(--font-display)', fontSize: '20px', lineHeight: 1.9, color: 'var(--ink)' }}>
-          {currentPassage.verses.map((v) => {
-            const isHighlighted = highlightedVerses.includes(v.num);
-            return (
-              <span
-                key={v.num}
-                onClick={() => setActiveVerse(v.num)}
-                style={{
-                  background: isHighlighted ? 'rgba(184, 134, 59, 0.2)' : 'transparent',
-                  borderRadius: '4px',
-                  padding: '2px 4px',
-                  cursor: 'pointer',
-                  transition: 'background 0.2s ease',
-                  display: 'inline'
-                }}
-              >
-                <span className="vnum" style={{ color: 'var(--gold)', fontSize: '13px', fontWeight: 700, verticalAlign: 'super', marginRight: '4px' }}>
-                  {v.num}
-                </span>
-                {v.text}{' '}
-                {v.xref && (
-                  <span style={{ fontSize: '11px', color: 'var(--moss)', fontWeight: 600, background: 'var(--parchment-deep)', padding: '1px 5px', borderRadius: '4px', border: '1px solid var(--line)', marginLeft: '2px' }} title={`Cross reference: ${v.xref}`}>
-                    [{v.xref}]
-                  </span>
-                )}
-              </span>
-            );
-          })}
-        </div>
-
-        {/* Verse Action Toolbar */}
-        <div className="verse-actions" style={{ marginTop: '28px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          <button
-            className="tag-btn"
-            onClick={() => toggleHighlight(activeVerse)}
-            style={{ background: 'var(--parchment-deep)', color: 'var(--ink)', border: '1px solid var(--line-strong)', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer' }}
-          >
-            <i className="ti ti-highlight" style={{ color: 'var(--gold)' }}></i> Highlight Verse {activeVerse}
-          </button>
-          
-          <button
-            className="tag-btn"
-            onClick={() => alert(`Created note anchor for ${currentPassage.book} ${currentPassage.chapter}:${activeVerse}`)}
-            style={{ background: 'var(--parchment-deep)', color: 'var(--ink)', border: '1px solid var(--line-strong)', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer' }}
-          >
-            <i className="ti ti-notes" style={{ color: 'var(--gold)' }}></i> Add Study Note
-          </button>
-
-          <button
-            className="tag-btn"
-            onClick={() => setIsPlaying(!isPlaying)}
-            style={{ background: 'var(--parchment-deep)', color: 'var(--ink)', border: '1px solid var(--line-strong)', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer' }}
-          >
-            <i className={isPlaying ? "ti ti-player-pause" : "ti ti-player-play"} style={{ color: 'var(--gold)' }}></i> {isPlaying ? "Pause Audio" : "Listen Chapter"}
-          </button>
-        </div>
-
-        {/* Audio Player Bar */}
-        <div className="audio-player-bar">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {/* ─── Navigation Bar ─── */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '8px',
+            marginBottom: '24px', paddingBottom: '14px',
+            borderBottom: '1px solid var(--line)',
+            flexWrap: 'wrap'
+          }}>
+            {/* Book + Chapter Selector Button */}
             <button
-              onClick={() => setIsPlaying(!isPlaying)}
-              style={{ background: 'var(--moss)', color: '#fff', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+              id="book-chapter-selector"
+              onClick={openBookPicker}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '8px',
+                background: 'var(--parchment-deep)',
+                border: `1px solid ${accentColor}40`,
+                borderRadius: '10px',
+                padding: '8px 14px',
+                cursor: 'pointer',
+                fontFamily: 'var(--font-display)',
+                fontSize: '17px', fontWeight: 700,
+                color: 'var(--ink)',
+                flex: 1,
+                maxWidth: '300px'
+              }}
             >
-              <i className={isPlaying ? "ti ti-player-pause" : "ti ti-player-play"} style={{ fontSize: '18px' }}></i>
+              <i className="ti ti-book-2" style={{ color: accentColor, fontSize: '18px' }} />
+              <span>{selectedBook ? selectedBook.title : 'Select Book'}</span>
+              {selectedBook && (
+                <span style={{ color: accentColor, fontWeight: 600, fontSize: '16px' }}>{selectedChapter}</span>
+              )}
+              <i className="ti ti-chevron-down" style={{ color: 'var(--ink-soft)', fontSize: '14px', marginLeft: 'auto' }} />
             </button>
 
-            <div>
-              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)' }}>
-                {currentPassage.book} {currentPassage.chapter} Narrated
-              </div>
-              <div style={{ fontSize: '11px', color: 'var(--ink-soft)' }}>
-                {translation} • Reverent Studio Audio
-              </div>
+            {/* Prev / Next Chapter */}
+            <div style={{ display: 'flex', gap: '6px', marginLeft: 'auto' }}>
+              <button
+                onClick={goToPrevChapter}
+                disabled={!hasPrev}
+                aria-label="Previous chapter"
+                title={hasPrev ? `${selectedBook?.title} ${selectedChapter - 1}` : 'First chapter'}
+                style={{
+                  background: 'var(--parchment-deep)', border: '1px solid var(--line-strong)',
+                  borderRadius: '8px', padding: '8px 12px', cursor: hasPrev ? 'pointer' : 'not-allowed',
+                  color: hasPrev ? 'var(--ink)' : 'var(--ink-soft)', opacity: hasPrev ? 1 : 0.4,
+                  display: 'flex', alignItems: 'center'
+                }}
+              >
+                <i className="ti ti-chevron-left" />
+              </button>
+              <button
+                onClick={goToNextChapter}
+                disabled={!hasNext}
+                aria-label="Next chapter"
+                title={hasNext ? `${selectedBook?.title} ${selectedChapter + 1}` : 'Last chapter'}
+                style={{
+                  background: 'var(--parchment-deep)', border: '1px solid var(--line-strong)',
+                  borderRadius: '8px', padding: '8px 12px', cursor: hasNext ? 'pointer' : 'not-allowed',
+                  color: hasNext ? 'var(--ink)' : 'var(--ink-soft)', opacity: hasNext ? 1 : 0.4,
+                  display: 'flex', alignItems: 'center'
+                }}
+              >
+                <i className="ti ti-chevron-right" />
+              </button>
+
+              {/* Font size control */}
+              <button
+                onClick={() => setFontSize(f => Math.min(f + 2, 28))}
+                aria-label="Increase font size"
+                title="Larger text"
+                style={{
+                  background: 'var(--parchment-deep)', border: '1px solid var(--line-strong)',
+                  borderRadius: '8px', padding: '8px 10px', cursor: 'pointer',
+                  color: 'var(--ink)', fontSize: '12px', fontWeight: 700
+                }}
+              >A+</button>
+              <button
+                onClick={() => setFontSize(f => Math.max(f - 2, 14))}
+                aria-label="Decrease font size"
+                title="Smaller text"
+                style={{
+                  background: 'var(--parchment-deep)', border: '1px solid var(--line-strong)',
+                  borderRadius: '8px', padding: '8px 10px', cursor: 'pointer',
+                  color: 'var(--ink)', fontSize: '11px', fontWeight: 700
+                }}
+              >A-</button>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <button
-              onClick={() => setPlaybackSpeed(s => s === '1.0x' ? '1.25x' : s === '1.25x' ? '1.5x' : '1.0x')}
-              style={{ background: 'var(--parchment-deep)', border: '1px solid var(--line-strong)', color: 'var(--ink)', fontSize: '11px', fontWeight: 600, padding: '4px 8px', borderRadius: '6px', cursor: 'pointer' }}
-            >
-              ⚡ {playbackSpeed}
-            </button>
-          </div>
-        </div>
+          {/* ─── Passage Eyebrow ─── */}
+          {selectedBook && (
+            <div style={{
+              fontSize: '12px', color: accentColor, letterSpacing: '0.08em',
+              textTransform: 'uppercase', marginBottom: '20px', fontWeight: 700,
+              display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap'
+            }}>
+              <span>{selectedBook.testament}</span>
+              <span style={{ color: 'var(--line-strong)' }}>·</span>
+              <span>{selectedBook.title}</span>
+              <span style={{ color: 'var(--line-strong)' }}>·</span>
+              <span>Chapter {selectedChapter}</span>
+              {passage?.translation && (
+                <>
+                  <span style={{ color: 'var(--line-strong)' }}>·</span>
+                  <span style={{ textTransform: 'none', letterSpacing: 0, fontSize: '11px', background: 'var(--parchment-deep)', padding: '2px 8px', borderRadius: '6px', border: '1px solid var(--line-strong)' }}>
+                    {passage.translation}
+                  </span>
+                </>
+              )}
+            </div>
+          )}
 
-      </div>
-    </main>
+          {/* ─── Loading State ─── */}
+          {loading && (
+            <div style={{ padding: '40px 0' }}>
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} style={{
+                  height: '22px', background: 'var(--parchment-deep)',
+                  borderRadius: '6px', marginBottom: '16px',
+                  width: `${70 + (i % 3) * 10}%`,
+                  animation: 'pulse 1.5s ease-in-out infinite',
+                  animationDelay: `${i * 0.08}s`
+                }} />
+              ))}
+            </div>
+          )}
+
+          {/* ─── Error State ─── */}
+          {!loading && error && (
+            <div style={{
+              padding: '32px', textAlign: 'center',
+              background: 'var(--parchment-deep)', borderRadius: '12px',
+              border: '1px solid var(--line-strong)'
+            }}>
+              <div style={{ fontSize: '32px', marginBottom: '12px' }}>📡</div>
+              <div style={{ fontWeight: 700, color: 'var(--ink)', marginBottom: '8px' }}>Passage Unavailable</div>
+              <div style={{ fontSize: '13px', color: 'var(--ink-soft)', marginBottom: '16px' }}>{error}</div>
+              <button
+                onClick={() => setSelectedBook(prev => ({ ...prev }))}
+                style={{
+                  background: accentColor, color: '#fff', border: 'none',
+                  borderRadius: '8px', padding: '8px 20px', cursor: 'pointer',
+                  fontFamily: 'inherit', fontWeight: 600
+                }}
+              >Try Again</button>
+            </div>
+          )}
+
+          {/* ─── Empty State — no book selected ─── */}
+          {!loading && !error && !passage && !selectedBook && (
+            <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>📖</div>
+              <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--ink)', fontFamily: 'var(--font-display)', marginBottom: '8px' }}>
+                Choose a Book to Begin
+              </div>
+              <div style={{ fontSize: '14px', color: 'var(--ink-soft)', marginBottom: '24px' }}>
+                Browse {tradition.charAt(0).toUpperCase() + tradition.slice(1)} canon — all books, every chapter
+              </div>
+              <button
+                onClick={openBookPicker}
+                style={{
+                  background: accentColor, color: '#fff', border: 'none',
+                  borderRadius: '10px', padding: '12px 28px', cursor: 'pointer',
+                  fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '16px'
+                }}
+              >
+                <i className="ti ti-book-2" /> Browse Books
+              </button>
+            </div>
+          )}
+
+          {/* ─── Verses ─── */}
+          {!loading && !error && passage?.verses && (
+            <>
+              {/* Source note for local/public-domain texts */}
+              {passage.source && (
+                <div style={{
+                  fontSize: '11px', color: 'var(--ink-soft)', fontStyle: 'italic',
+                  marginBottom: '20px', padding: '6px 12px',
+                  background: 'var(--parchment-deep)', borderRadius: '6px',
+                  border: '1px solid var(--line)'
+                }}>
+                  📜 Source: {passage.source}
+                </div>
+              )}
+
+              <div
+                className="verse"
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: `${fontSize}px`,
+                  lineHeight: 2.0,
+                  color: 'var(--ink)'
+                }}
+              >
+                {passage.verses.map((v) => {
+                  const isHighlighted = highlightedVerses.includes(v.num);
+                  const isActive = activeVerse === v.num;
+
+                  return (
+                    <span
+                      key={v.num}
+                      onClick={() => setActiveVerse(v.num === activeVerse ? null : v.num)}
+                      onDoubleClick={() => toggleHighlight(v.num)}
+                      title="Click to select · Double-click to highlight"
+                      style={{
+                        background: isHighlighted
+                          ? `${accentColor}25`
+                          : isActive
+                            ? `${accentColor}12`
+                            : 'transparent',
+                        borderRadius: '4px',
+                        padding: '2px 4px',
+                        cursor: 'pointer',
+                        transition: 'background 0.2s ease',
+                        display: 'inline',
+                        outline: isActive ? `2px solid ${accentColor}40` : 'none',
+                        outlineOffset: '2px'
+                      }}
+                    >
+                      <sup style={{
+                        color: accentColor,
+                        fontSize: '12px', fontWeight: 700,
+                        marginRight: '3px', userSelect: 'none'
+                      }}>
+                        {v.num}
+                      </sup>
+                      {v.text}{' '}
+                      {v.xref && (
+                        <span
+                          title={`Cross reference: ${v.xref}`}
+                          style={{
+                            fontSize: '10px', color: '#10b981', fontWeight: 600,
+                            background: 'var(--parchment-deep)', padding: '1px 5px',
+                            borderRadius: '4px', border: '1px solid var(--line)',
+                            marginLeft: '2px'
+                          }}
+                        >
+                          [{v.xref}]
+                        </span>
+                      )}
+                    </span>
+                  );
+                })}
+              </div>
+
+              {/* ─── Verse Action Toolbar ─── */}
+              {activeVerse !== null && (
+                <div style={{
+                  marginTop: '24px',
+                  padding: '14px',
+                  background: 'var(--parchment-deep)',
+                  borderRadius: '12px',
+                  border: '1px solid var(--line-strong)',
+                  display: 'flex', gap: '8px', flexWrap: 'wrap',
+                  alignItems: 'center'
+                }}>
+                  <div style={{ fontSize: '12px', color: accentColor, fontWeight: 700, width: '100%', marginBottom: '4px' }}>
+                    {selectedBook?.title} {selectedChapter}:{activeVerse}
+                  </div>
+                  <button
+                    onClick={() => toggleHighlight(activeVerse)}
+                    style={{
+                      background: highlightedVerses.includes(activeVerse) ? `${accentColor}20` : 'var(--parchment)',
+                      color: 'var(--ink)', border: `1px solid ${accentColor}50`,
+                      padding: '7px 14px', borderRadius: '8px', cursor: 'pointer',
+                      fontSize: '13px', fontWeight: 600, fontFamily: 'inherit',
+                      display: 'flex', alignItems: 'center', gap: '5px'
+                    }}
+                  >
+                    <i className="ti ti-highlight" style={{ color: accentColor }} />
+                    {highlightedVerses.includes(activeVerse) ? 'Remove Highlight' : 'Highlight'}
+                  </button>
+                  <button
+                    onClick={() => alert(`Created note anchor for ${selectedBook?.title} ${selectedChapter}:${activeVerse}`)}
+                    style={{
+                      background: 'var(--parchment)', color: 'var(--ink)',
+                      border: '1px solid var(--line-strong)', padding: '7px 14px',
+                      borderRadius: '8px', cursor: 'pointer', fontSize: '13px',
+                      fontWeight: 600, fontFamily: 'inherit',
+                      display: 'flex', alignItems: 'center', gap: '5px'
+                    }}
+                  >
+                    <i className="ti ti-notes" style={{ color: accentColor }} /> Add Note
+                  </button>
+                  <button
+                    onClick={() => {
+                      const text = `${selectedBook?.title} ${selectedChapter}:${activeVerse} — ${passage.verses.find(v => v.num === activeVerse)?.text}`;
+                      navigator.clipboard?.writeText(text).catch(() => {});
+                    }}
+                    style={{
+                      background: 'var(--parchment)', color: 'var(--ink)',
+                      border: '1px solid var(--line-strong)', padding: '7px 14px',
+                      borderRadius: '8px', cursor: 'pointer', fontSize: '13px',
+                      fontWeight: 600, fontFamily: 'inherit',
+                      display: 'flex', alignItems: 'center', gap: '5px'
+                    }}
+                  >
+                    <i className="ti ti-copy" style={{ color: accentColor }} /> Copy
+                  </button>
+                </div>
+              )}
+
+              {/* ─── Audio Player Bar ─── */}
+              <div className="audio-player-bar" style={{ marginTop: '28px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <button
+                    onClick={() => setIsPlaying(!isPlaying)}
+                    style={{
+                      background: accentColor, color: '#fff', border: 'none',
+                      borderRadius: '50%', width: '38px', height: '38px',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      cursor: 'pointer', flexShrink: 0
+                    }}
+                  >
+                    <i className={isPlaying ? 'ti ti-player-pause' : 'ti ti-player-play'} style={{ fontSize: '18px' }} />
+                  </button>
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)' }}>
+                      {selectedBook?.title} {selectedChapter} — Narrated
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--ink-soft)' }}>
+                      {passage?.translation} · Reverent Studio Audio
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setPlaybackSpeed(s => s === '1.0x' ? '1.25x' : s === '1.25x' ? '1.5x' : '1.0x')}
+                  style={{
+                    background: 'var(--parchment-deep)', border: '1px solid var(--line-strong)',
+                    color: 'var(--ink)', fontSize: '11px', fontWeight: 600,
+                    padding: '4px 8px', borderRadius: '6px', cursor: 'pointer'
+                  }}
+                >⚡ {playbackSpeed}</button>
+              </div>
+
+              {/* ─── Chapter Navigation Footer ─── */}
+              <div style={{
+                marginTop: '36px', display: 'flex',
+                justifyContent: 'space-between', gap: '12px'
+              }}>
+                <button
+                  onClick={goToPrevChapter}
+                  disabled={!hasPrev}
+                  style={{
+                    flex: 1, padding: '12px 16px',
+                    background: hasPrev ? 'var(--parchment-deep)' : 'transparent',
+                    border: `1px solid ${hasPrev ? 'var(--line-strong)' : 'transparent'}`,
+                    borderRadius: '10px', cursor: hasPrev ? 'pointer' : 'default',
+                    color: hasPrev ? 'var(--ink)' : 'transparent',
+                    fontWeight: 600, fontFamily: 'inherit', fontSize: '14px',
+                    display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center'
+                  }}
+                >
+                  <i className="ti ti-chevron-left" />
+                  {hasPrev ? `← Chapter ${selectedChapter - 1}` : ''}
+                </button>
+                <button
+                  onClick={goToNextChapter}
+                  disabled={!hasNext}
+                  style={{
+                    flex: 1, padding: '12px 16px',
+                    background: hasNext ? `${accentColor}15` : 'transparent',
+                    border: `1px solid ${hasNext ? accentColor + '40' : 'transparent'}`,
+                    borderRadius: '10px', cursor: hasNext ? 'pointer' : 'default',
+                    color: hasNext ? accentColor : 'transparent',
+                    fontWeight: 700, fontFamily: 'inherit', fontSize: '14px',
+                    display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center'
+                  }}
+                >
+                  {hasNext ? `Chapter ${selectedChapter + 1} →` : ''}
+                  {hasNext && <i className="ti ti-chevron-right" />}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </main>
+    </>
   );
 }

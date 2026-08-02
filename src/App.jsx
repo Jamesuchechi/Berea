@@ -29,10 +29,15 @@ export default function App() {
   });
   const [pendingEmail, setPendingEmail] = useState('');
   const [activeTab, setActiveTab] = useState('read');
-  const [translation, setTranslation] = useState('ESV');
-  const [tradition, setTradition] = useState('Protestant');
+  const [translation, setTranslation] = useState('KJV');
+  const [tradition, setTradition] = useState('protestant');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [assistantOpen, setAssistantOpen] = useState(true);
+
+  // Reader navigation state — shared between Topbar breadcrumb and ReaderView
+  const [readerBook, setReaderBook] = useState(null);
+  const [readerChapter, setReaderChapter] = useState(null);
+  const [readerOpenPicker, setReaderOpenPicker] = useState(false);
   const [theme, setTheme] = useState(() => localStorage.getItem('berea_theme') || 'light');
 
   useEffect(() => {
@@ -63,7 +68,7 @@ export default function App() {
   }, []);
 
   const handleLoginSuccess = (selectedTradition) => {
-    if (selectedTradition) setTradition(selectedTradition);
+    if (selectedTradition) setTradition(selectedTradition.toLowerCase());
     setIsAuthenticated(true);
     localStorage.setItem('berea_auth', 'true');
     setHydrating(true);
@@ -167,7 +172,18 @@ export default function App() {
         return <CanonComparisonView currentTradition={tradition} setTradition={setTradition} />;
       case 'read':
       default:
-        return <ReaderView translation={translation} tradition={tradition} />;
+        return (
+          <ReaderView
+            translation={translation}
+            tradition={tradition}
+            onNavigationChange={({ book, chapter }) => {
+              setReaderBook(book);
+              setReaderChapter(chapter);
+            }}
+            triggerOpenPicker={readerOpenPicker}
+            onPickerOpened={() => setReaderOpenPicker(false)}
+          />
+        );
     }
   };
 
@@ -186,6 +202,11 @@ export default function App() {
         setAssistantOpen={setAssistantOpen}
         onNavigateLanding={() => setRoute('landing')}
         onLogout={handleLogout}
+        currentBook={activeTab === 'read' ? readerBook : null}
+        currentChapter={activeTab === 'read' ? readerChapter : null}
+        onOpenBookPicker={activeTab === 'read' ? () => {
+          setReaderOpenPicker(true);
+        } : null}
       />
 
       <Sidebar
@@ -202,6 +223,7 @@ export default function App() {
       {assistantOpen && (
         <AssistantPanel
           assistantOpen={assistantOpen}
+          setAssistantOpen={setAssistantOpen}
           translation={translation}
           tradition={tradition}
         />
