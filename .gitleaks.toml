@@ -1,0 +1,35 @@
+# Gitleaks configuration
+# https://github.com/gitleaks/gitleaks
+
+title = "Berea gitleaks config"
+
+[extend]
+  # Use the default ruleset as a base
+  useDefault = true
+
+[[rules]]
+  id = "groq-api-key"
+  description = "Groq API Key"
+  regex = '''gsk_[A-Za-z0-9]{40,}'''
+  tags = ["key", "groq", "ai"]
+
+[[rules]]
+  id = "bible-api-key"
+  description = "API.Bible key format"
+  regex = '''VITE_BIBLE_API_KEY\s*=\s*[A-Za-z0-9]{20,}'''
+  tags = ["key", "bible"]
+
+[allowlist]
+  description = "Global allowlist"
+  regexTarget = "match"
+  regexes = [
+    # Allow placeholder values in example files
+    '''your-.*-key''',
+    '''your_.*_key''',
+    '''gsk_your_''',
+  ]
+  paths = [
+    '''.env.example''',
+    '''docs/.*\.md''',
+    '''STATUS\.md''',
+  ]

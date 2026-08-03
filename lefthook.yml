@@ -1,0 +1,25 @@
+# Lefthook configuration
+# https://github.com/evilmartians/lefthook
+#
+# Install lefthook: npm install --save-dev lefthook
+# Then: npx lefthook install
+#
+# This file is committed so any contributor gets the hooks automatically
+# on `npm install` (via the "prepare" script in package.json).
+
+pre-commit:
+  parallel: false
+  commands:
+    secrets:
+      priority: 1
+      run: |
+        if command -v gitleaks &>/dev/null; then
+          gitleaks protect --staged --no-banner --redact
+        else
+          echo "⚠️  gitleaks not found — pattern fallback active. Install gitleaks for full coverage."
+          # The .git/hooks/pre-commit fallback script handles this case
+        fi
+    lint-staged:
+      priority: 2
+      glob: "*.{js,jsx,ts,tsx}"
+      run: npx eslint {staged_files} --max-warnings 0

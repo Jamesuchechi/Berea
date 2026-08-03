@@ -29,7 +29,7 @@ export default function Sidebar({
       <div>
         {/* Sidebar Brand Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px 18px', borderBottom: '1px solid var(--line)', marginBottom: '14px' }}>
-          <img src="/berea_logo.png" alt="Berea Logo" style={{ width: '28px', height: '28px', borderRadius: '6px', border: '1px solid var(--line-strong)' }} />
+          <img src="/berea_logo.jpg" alt="Berea Logo" style={{ width: '28px', height: '28px', borderRadius: '6px', border: '1px solid var(--line-strong)' }} />
           <span style={{ fontFamily: 'var(--font-display)', fontSize: '18px', fontWeight: 600, color: 'var(--ink)' }}>
             Berea
           </span>

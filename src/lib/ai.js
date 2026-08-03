@@ -1,5 +1,16 @@
 /**
- * Standard AI context object constructor according to ARCHITECTURE.md
+ * AI module — client side.
+ *
+ * The GROQ_API_KEY lives ONLY in the Supabase Edge Function environment.
+ * This file must never import or reference a VITE_GROQ_AI_API_KEY variable.
+ * All AI calls go through the /functions/v1/ai-assistant Edge Function.
+ */
+import { supabase } from './supabase';
+
+// ─── Context Builder ──────────────────────────────────────────────────────────
+
+/**
+ * Standard AI context object constructor per ARCHITECTURE.md
  */
 export function buildAIContext({
   book = 'John',
@@ -10,93 +21,68 @@ export function buildAIContext({
   trigger = 'chat',
   userInput = null
 }) {
-  return {
-    book,
-    chapter,
-    verse,
-    translation,
-    tradition,
-    trigger,
-    userInput
-  };
+  return { book, chapter, verse, translation, tradition, trigger, userInput };
 }
 
+// ─── Main AI call (server proxy) ──────────────────────────────────────────────
+
 /**
- * Call Groq AI API with system guardrails & contextual prompt
+ * Sends an AI context payload to the Supabase Edge Function proxy.
+ * The Edge Function holds the Groq API key; this client never touches it.
+ *
+ * Falls back to a local synthesis response if:
+ *   - The user is not authenticated (no session)
+ *   - The Edge Function returns a non-OK response
+ *   - A network error occurs
  */
 export async function askAIContextualAssistant(contextPayload) {
-  const groqApiKey = import.meta.env.VITE_GROQ_AI_API_KEY;
+  // 1. Get the current session token (required for the edge function auth check)
+  const { data: { session } } = await supabase.auth.getSession();
 
-  const systemPrompt = `You are Berea AI — a reverent, objective, scholarly, and context-aware Scripture Study Assistant.
-
-Core Guardrails:
-1. When answering questions regarding contested scriptures, canon boundaries, or doctrines (e.g., Deuterocanon, Maccabees, Tobit, 1 Enoch, justification, sacraments), DO NOT assert a single denominational view as the sole truth.
-2. Present Protestant, Catholic, Eastern Orthodox, and Ethiopian Orthodox perspectives with historical clarity, mutual respect, and manuscript references.
-3. Acknowledge the user's active tradition lens (${contextPayload.tradition || 'Protestant'}), while clearly explaining how other traditions interpret the verse.
-4. Keep your tone reverent, unhurried, concise, and academically grounded.`;
-
-  let userPrompt = `Passage Context: ${contextPayload.book} Chapter ${contextPayload.chapter}${contextPayload.verse ? ':' + contextPayload.verse : ''} (${contextPayload.translation || 'ESV'} translation, ${contextPayload.tradition || 'Protestant'} tradition lens).`;
-
-  if (contextPayload.trigger === 'explain_verse') {
-    userPrompt += ` Please provide a breakdown of verse ${contextPayload.verse}, covering historical background, Greek/Hebrew terms, and cross-tradition interpretations.`;
-  } else if (contextPayload.trigger === 'cross_references') {
-    userPrompt += ` Provide key canonical and deuterocanonical cross-references for this passage.`;
-  } else if (contextPayload.trigger === 'expand_note') {
-    userPrompt += ` Expand this study note with historical and theological context: "${contextPayload.userInput}"`;
-  } else if (contextPayload.userInput) {
-    userPrompt += ` User Question: "${contextPayload.userInput}"`;
-  } else {
-    userPrompt += ` Provide a reverent historical and theological summary of this passage.`;
-  }
-
-  // 1. If Groq API Key is available, call Groq API directly
-  if (groqApiKey) {
+  if (session?.access_token) {
     try {
-      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
+      const { data, error } = await supabase.functions.invoke('ai-assistant', {
+        body: contextPayload,
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${groqApiKey}`
+          Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt }
-          ],
-          temperature: 0.3,
-          max_tokens: 600
-        })
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        if (data.choices && data.choices[0] && data.choices[0].message) {
-          return {
-            success: true,
-            message: data.choices[0].message.content,
-            model: 'llama-3.3-70b-versatile'
-          };
-        }
+      if (!error && data?.success) {
+        return {
+          success: true,
+          message: data.message,
+          model: data.model ?? 'edge-function',
+          source: data.source ?? 'edge',
+        };
+      }
+
+      // Log the edge function error but don't surface it to the user
+      if (error) {
+        console.warn('[Berea AI] Edge function error, using local fallback:', error.message);
       }
     } catch (err) {
-      console.warn('Groq AI API call failed, falling back to local synthesis engine:', err);
+      console.warn('[Berea AI] Network error calling edge function, using local fallback:', err);
     }
   }
 
-  // 2. Local Synthesis Fallback Engine
+  // 2. Local synthesis fallback (unauthenticated or upstream failure)
   return {
     success: true,
-    message: generateLocalContextualResponse(contextPayload)
+    message: generateLocalContextualResponse(contextPayload),
+    source: 'local-fallback',
   };
 }
 
+// ─── Local Fallback Engine ────────────────────────────────────────────────────
+
 /**
- * Local Contextual Response Generator (Fallback)
+ * Offline / unauthenticated response generator.
+ * Used when the edge function is unreachable or the user is not logged in.
  */
 function generateLocalContextualResponse(ctx) {
   const ref = `${ctx.book} ${ctx.chapter}${ctx.verse ? ':' + ctx.verse : ''}`;
-  const trad = ctx.tradition.toLowerCase();
+  const trad = (ctx.tradition ?? 'protestant').toLowerCase();
 
   if (ctx.trigger === 'explain_verse') {
     return `### Historical Context for ${ref} (${ctx.tradition} Lens)\n\nThis passage reflects key 1st-century Biblical themes. Under the **${trad}** tradition, ${ref} is understood in connection with covenant history.\n\n* **Protestant View**: Emphasizes scriptural authority and direct personal faith.\n* **Catholic View**: Connects this passage to sacramental theology and Church tradition.\n* **Orthodox View**: Reads this through the lens of theosis and Septuagint liturgy.`;
@@ -106,11 +92,14 @@ function generateLocalContextualResponse(ctx) {
     return `### Cross References for ${ref}\n\n1. **Protestant Canon**: Numbers 21:9, Romans 5:8\n2. **Deuterocanon**: Wisdom of Solomon 16:6-7\n3. **Early Church Fathers**: 1 Clement 12:7`;
   }
 
-  return `Berea AI Assistant analyzing ${ref} (${ctx.tradition} tradition). Feel free to ask about manuscript origins, Greek/Hebrew word studies, or cross-tradition views.`;
+  return `Berea AI analyzing ${ref} (${ctx.tradition} tradition). Ask about manuscript origins, Greek/Hebrew word studies, or cross-tradition views.`;
 }
 
+// ─── Semantic Search ──────────────────────────────────────────────────────────
+
 /**
- * Semantic Search engine across canon + apocrypha + user notes
+ * Client-side semantic search across canon + apocrypha + user notes.
+ * TODO Phase 3: Replace with a proper vector search via Supabase pgvector.
  */
 export function performSemanticSearch(query, userNotes = []) {
   if (!query || !query.trim()) return [];

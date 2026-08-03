@@ -34,7 +34,7 @@ export default function Topbar({
           <i className="ti ti-menu-2" />
         </button>
         <div className="brand-container" onClick={onNavigateLanding} style={{ cursor: 'pointer' }}>
-          <img src="/berea_logo.png" alt="Berea Logo" className="brand-logo-img" />
+          <img src="/berea_logo.jpg" alt="Berea Logo" className="brand-logo-img" />
           <span className="brand">Berea</span>
         </div>
 

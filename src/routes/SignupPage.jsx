@@ -26,7 +26,7 @@ export default function SignupPage({ onNavigateLanding, onNavigateLogin, onNavig
         {/* Top Header & Back Button */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 2 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <img src="/berea_logo.png" alt="Berea Logo" style={{ width: '34px', height: '34px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)' }} />
+            <img src="/berea_logo.jpg" alt="Berea Logo" style={{ width: '34px', height: '34px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)' }} />
             <span style={{ fontFamily: 'var(--font-display)', fontSize: '24px', fontWeight: 600, color: '#fff' }}>
               Berea
             </span>

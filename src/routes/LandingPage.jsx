@@ -127,7 +127,7 @@ export default function LandingPage({ theme = 'light', setTheme, onNavigateLogin
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <img src="/berea_logo.png" alt="Berea Logo" style={{ width: '34px', height: '34px', borderRadius: '8px', border: '1px solid var(--line-strong)' }} />
+          <img src="/berea_logo.jpg" alt="Berea Logo" style={{ width: '34px', height: '34px', borderRadius: '8px', border: '1px solid var(--line-strong)' }} />
           <span style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 600, letterSpacing: '0.01em', color: 'var(--ink)' }}>
             Berea
           </span>

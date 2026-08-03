@@ -45,7 +45,7 @@ export default function AppHydrationSplash({ onHydrated }) {
     >
       <div style={{ textAlign: 'center', maxWidth: '380px', width: '100%' }}>
         <img
-          src="/berea_logo.png"
+          src="/berea_logo.jpg"
           alt="Berea Logo"
           style={{
             width: '72px',
