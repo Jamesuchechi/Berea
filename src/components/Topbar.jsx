@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { subscribeQueueStatus, triggerQueueSync } from '../services/offlineQueue';
 
 export default function Topbar({
   theme = 'light',
@@ -20,6 +21,15 @@ export default function Topbar({
 }) {
   const isDark = theme === 'dark';
 
+  const [networkStatus, setNetworkStatus] = useState({ isOnline: true, queuedCount: 0 });
+
+  useEffect(() => {
+    const unsubscribe = subscribeQueueStatus((status) => {
+      setNetworkStatus(status);
+    });
+    return unsubscribe;
+  }, []);
+
   const bookLabel = currentBook ? currentBook.title : 'Select Book';
   const chapterLabel = currentChapter ? String(currentChapter) : '';
 
@@ -36,6 +46,49 @@ export default function Topbar({
         <div className="brand-container" onClick={onNavigateLanding} style={{ cursor: 'pointer' }}>
           <img src="/berea_logo.jpg" alt="Berea Logo" className="brand-logo-img" />
           <span className="brand">Berea</span>
+
+          {/* Sync / Offline Network Indicator Badge */}
+          {!networkStatus.isOnline ? (
+            <span
+              style={{
+                fontSize: '0.7rem',
+                padding: '2px 6px',
+                borderRadius: '10px',
+                background: 'rgba(239, 68, 68, 0.15)',
+                color: '#ef4444',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                marginLeft: '8px'
+              }}
+              title="Working offline. Writes are saved locally and will sync when reconnected."
+            >
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ef4444' }}></span>
+              Offline {networkStatus.queuedCount > 0 && `(${networkStatus.queuedCount})`}
+            </span>
+          ) : networkStatus.queuedCount > 0 ? (
+            <button
+              onClick={triggerQueueSync}
+              style={{
+                fontSize: '0.7rem',
+                padding: '2px 6px',
+                borderRadius: '10px',
+                background: 'rgba(245, 158, 11, 0.15)',
+                color: '#f59e0b',
+                border: '1px solid rgba(245, 158, 11, 0.3)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                marginLeft: '8px',
+                cursor: 'pointer'
+              }}
+              title="Click to sync queued offline changes"
+            >
+              <i className="ti ti-refresh" style={{ fontSize: '10px' }} />
+              Syncing ({networkStatus.queuedCount})
+            </button>
+          ) : null}
         </div>
 
         {/* Live Breadcrumb — clickable to open book picker */}

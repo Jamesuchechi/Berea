@@ -1,66 +1,59 @@
-import React, { useState } from 'react';
-
-const INITIAL_NOTES = [
-  {
-    id: 1,
-    reference: 'John 3:16',
-    translation: 'ESV',
-    category: 'Highlights',
-    date: 'Aug 2, 2026',
-    content: 'Nicodemus night visitor context — compare with Serpent in Wilderness (Numbers 21). The phrase "only begotten" (monogenēs) highlights uniqueness rather than origin.',
-    tags: ['Christology', 'John']
-  },
-  {
-    id: 2,
-    reference: 'Tobit 1:3',
-    translation: 'NRSV Catholic Edition',
-    category: 'Deuterocanon Notes',
-    date: 'Aug 1, 2026',
-    content: 'Tobit emphasizes almsgiving and personal righteousness during the Assyrian Exile in Nineveh. Shows post-exilic Jewish piety before the Roman period.',
-    tags: ['Deuterocanon', 'Exile', 'Tobit']
-  },
-  {
-    id: 3,
-    reference: '1 Enoch 1:9',
-    translation: 'Charles Apocrypha',
-    category: 'Pseudepigrapha',
-    date: 'Jul 29, 2026',
-    content: 'Direct source quoted in Jude 1:14-15 ("Behold, the Lord comes with ten thousands of his holy ones..."). Preserved canonically in Ethiopian Tewahedo Church.',
-    tags: ['Enoch', 'Jude', 'Ethiopian Canon']
-  }
-];
+import React, { useState, useEffect } from 'react';
+import { fetchUserNotes, createNote, deleteNote } from '../../services/noteService';
 
 export default function NotesView() {
-  const [notes, setNotes] = useState(INITIAL_NOTES);
-  const [filterCategory, setFilterCategory] = useState('All');
+  const [notes, setNotes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [newNoteText, setNewNoteText] = useState('');
-  const [newNoteRef, setNewNoteRef] = useState('John 3:17');
+  const [newNoteRef, setNewNoteRef] = useState('John 3:16');
+  const [saving, setSaving] = useState(false);
 
-  const filteredNotes = notes.filter(n => {
-    const matchesCat = filterCategory === 'All' || n.category === filterCategory;
-    const matchesSearch = n.reference.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          n.content.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCat && matchesSearch;
-  });
+  const loadNotes = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await fetchUserNotes();
+      setNotes(data);
+    } catch (err) {
+      setError('Failed to load study notes. Using local copy.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const handleAddNote = (e) => {
+  useEffect(() => {
+    loadNotes();
+  }, []);
+
+  const handleAddNote = async (e) => {
     e.preventDefault();
     if (!newNoteText.trim()) return;
 
-    const newObj = {
-      id: Date.now(),
-      reference: newNoteRef || 'General Note',
-      translation: 'ESV',
-      category: 'User Note',
-      date: 'Just now',
-      content: newNoteText,
-      tags: ['Personal']
-    };
+    setSaving(true);
+    const result = await createNote({
+      bookId: '00000000-0000-0000-0000-000000000000', // placeholder fallback ID
+      chapter: 3,
+      verseNumber: 16,
+      content: `${newNoteRef ? `[${newNoteRef}] ` : ''}${newNoteText}`,
+    });
 
-    setNotes([newObj, ...notes]);
-    setNewNoteText('');
+    if (result.item) {
+      setNotes(prev => [result.item, ...prev]);
+      setNewNoteText('');
+    }
+    setSaving(false);
   };
+
+  const handleDeleteNote = async (id) => {
+    setNotes(prev => prev.filter(n => n.id !== id));
+    await deleteNote(id);
+  };
+
+  const filteredNotes = notes.filter(n =>
+    n.content.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <main className="reader" style={{ background: 'var(--parchment)', color: 'var(--ink)' }}>
@@ -79,8 +72,18 @@ export default function NotesView() {
           </span>
         </div>
 
-        {/* Search & Category Filter Bar */}
-        <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' }}>
+        {/* Error Alert Banner with Retry */}
+        {error && (
+          <div style={{ background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#ef4444', padding: '12px 16px', borderRadius: '8px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>⚠️ {error}</span>
+            <button onClick={loadNotes} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '4px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}>
+              Retry
+            </button>
+          </div>
+        )}
+
+        {/* Search Bar */}
+        <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
           <input
             type="text"
             placeholder="Search notes or references..."
@@ -88,7 +91,6 @@ export default function NotesView() {
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{
               flex: 1,
-              minWidth: '220px',
               padding: '10px 14px',
               borderRadius: '8px',
               border: '1px solid var(--line-strong)',
@@ -98,26 +100,6 @@ export default function NotesView() {
               fontSize: '13.5px'
             }}
           />
-
-          <select
-            value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
-            style={{
-              padding: '10px 14px',
-              borderRadius: '8px',
-              border: '1px solid var(--line-strong)',
-              background: 'var(--bg-card)',
-              color: 'var(--ink)',
-              outline: 'none',
-              fontSize: '13.5px',
-              fontWeight: 500
-            }}
-          >
-            <option value="All">All Categories</option>
-            <option value="Highlights">Highlights</option>
-            <option value="Deuterocanon Notes">Deuterocanon Notes</option>
-            <option value="Pseudepigrapha">Pseudepigrapha</option>
-          </select>
         </div>
 
         {/* New Note Form */}
@@ -139,42 +121,63 @@ export default function NotesView() {
             style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--line)', background: 'var(--bg-card)', color: 'var(--ink)', fontSize: '13.5px', outline: 'none', resize: 'vertical' }}
           ></textarea>
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
-            <button type="submit" className="btn btn-primary" style={{ padding: '8px 18px', fontSize: '13px' }}>
-              Save Anchored Note
+            <button type="submit" disabled={saving} className="btn btn-primary" style={{ padding: '8px 18px', fontSize: '13px' }}>
+              {saving ? 'Saving...' : 'Save Anchored Note'}
             </button>
           </div>
         </form>
 
+        {/* Loading Skeleton */}
+        {loading && (
+          <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--ink-soft)' }}>
+            <i className="ti ti-loader-2 spin" style={{ fontSize: '28px', display: 'block', marginBottom: '12px' }} />
+            <span>Loading study notes...</span>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!loading && filteredNotes.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '48px 20px', background: 'var(--parchment-deep)', borderRadius: '12px', border: '1px border-dashed var(--line-strong)' }}>
+            <i className="ti ti-notes-off" style={{ fontSize: '40px', color: 'var(--ink-faint)', marginBottom: '12px', display: 'block' }} />
+            <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>No study notes found</h3>
+            <p style={{ fontSize: '13.5px', color: 'var(--ink-soft)', maxWidth: '400px', margin: '0 auto' }}>
+              Write your first verse-anchored note using the form above or while reading in the Scripture view.
+            </p>
+          </div>
+        )}
+
         {/* Notes Cards List */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {filteredNotes.map((note) => (
-            <div key={note.id} className="card" style={{ background: 'var(--bg-card)', border: '1px solid var(--line-strong)', borderRadius: '12px', padding: '20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: 600, color: 'var(--gold)' }}>
-                    📖 {note.reference}
-                  </span>
-                  <span style={{ fontSize: '11px', background: 'var(--parchment-deep)', padding: '2px 8px', borderRadius: '4px', color: 'var(--ink-soft)' }}>
-                    {note.translation}
-                  </span>
+        {!loading && filteredNotes.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {filteredNotes.map((note) => (
+              <div key={note.id} className="card" style={{ background: 'var(--bg-card)', border: '1px solid var(--line-strong)', borderRadius: '12px', padding: '20px', position: 'relative' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: 600, color: 'var(--gold)' }}>
+                      📖 Note #{note.id.toString().slice(-4)}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--ink-faint)' }}>
+                      {new Date(note.createdAt || note.updatedAt || Date.now()).toLocaleDateString()}
+                    </span>
+                    <button
+                      onClick={() => handleDeleteNote(note.id)}
+                      title="Delete note"
+                      style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
+                    >
+                      <i className="ti ti-trash" style={{ fontSize: '14px' }} />
+                    </button>
+                  </div>
                 </div>
-                <span style={{ fontSize: '12px', color: 'var(--ink-faint)' }}>{note.date}</span>
-              </div>
 
-              <p style={{ fontSize: '14.5px', lineHeight: 1.65, color: 'var(--ink)', marginBottom: '12px' }}>
-                {note.content}
-              </p>
-
-              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                {note.tags.map((t, idx) => (
-                  <span key={idx} style={{ fontSize: '11px', background: 'rgba(184, 134, 59, 0.12)', color: 'var(--gold)', border: '1px solid rgba(184, 134, 59, 0.25)', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>
-                    #{t}
-                  </span>
-                ))}
+                <p style={{ fontSize: '14.5px', lineHeight: 1.65, color: 'var(--ink)', marginBottom: '4px', whiteSpace: 'pre-wrap' }}>
+                  {note.content}
+                </p>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
       </div>
     </main>

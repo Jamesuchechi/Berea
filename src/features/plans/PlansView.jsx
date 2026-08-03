@@ -1,44 +1,61 @@
-import React, { useState } from 'react';
-
-const PLANS = [
-  {
-    id: 'chronological',
-    title: '365-Day Whole-Bible & Deuterocanon Journey',
-    category: 'Comprehensive',
-    duration: '365 Days',
-    progress: 34,
-    todayReading: 'Tobit 1–3 & Proverbs 8:1-21',
-    description: 'Read canonical Scripture, Deuterocanon, and historic Jewish-Christian writings in chronological order.'
-  },
-  {
-    id: 'deuterocanon',
-    title: '21-Day Deuterocanon & Wisdom Exploration',
-    category: 'Topical',
-    duration: '21 Days',
-    progress: 65,
-    todayReading: 'Wisdom of Solomon 7–9',
-    description: 'Deep dive into Wisdom, Sirach, Tobit, Judith, and Maccabees with historical tradition notes.'
-  },
-  {
-    id: 'fathers',
-    title: '14-Day Apostolic Fathers & Early Church History',
-    category: 'Historical',
-    duration: '14 Days',
-    progress: 10,
-    todayReading: 'Didache Chapters 1–6 (The Two Ways)',
-    description: 'Study early 1st–2nd century Christian documents written by Clement of Rome, Ignatius, and Polycarp.'
-  }
-];
+import { useState, useEffect } from 'react';
+import { fetchReadingPlans, getUserPlanProgress, completePlanDay } from '../../services/planService';
 
 export default function PlansView() {
-  const [plans, setPlans] = useState(PLANS);
-  const [activePlanId, setActivePlanId] = useState('chronological');
-  const [completedToday, setCompletedToday] = useState(false);
+  const [plans, setPlans] = useState([]);
+  const [activePlanId, setActivePlanId] = useState('');
+  const [planProgress, setPlanProgress] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showAiModal, setShowAiModal] = useState(false);
   const [aiGoal, setAiGoal] = useState('');
   const [aiDays, setAiDays] = useState(30);
 
+  const loadData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const planData = await fetchReadingPlans();
+      setPlans(planData);
+
+      if (planData.length > 0) {
+        const firstId = planData[0].id;
+        setActivePlanId(firstId);
+        const prog = await getUserPlanProgress(firstId);
+        setPlanProgress(prog);
+      }
+    } catch (err) {
+      setError('Failed to load reading plans. Using local fallback.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const handleSelectPlan = async (planId) => {
+    setActivePlanId(planId);
+    const prog = await getUserPlanProgress(planId);
+    setPlanProgress(prog);
+  };
+
+  const handleToggleCompleteDay = async () => {
+    if (!activePlanId || !planProgress) return;
+
+    const currentDay = planProgress.currentDay;
+    const result = await completePlanDay(activePlanId, currentDay);
+
+    if (result.progress) {
+      setPlanProgress(result.progress);
+    }
+  };
+
   const activePlan = plans.find(p => p.id === activePlanId) || plans[0];
+  const percentComplete = activePlan && planProgress
+    ? Math.min(100, Math.round((planProgress.completedDays.length / activePlan.durationDays) * 100))
+    : 0;
 
   const handleGeneratePlan = (e) => {
     e.preventDefault();
@@ -46,12 +63,12 @@ export default function PlansView() {
 
     const newPlan = {
       id: `ai-${Date.now()}`,
+      slug: `ai-${Date.now()}`,
       title: `${aiDays}-Day AI Plan: ${aiGoal}`,
-      category: 'AI Personalized',
-      duration: `${aiDays} Days`,
-      progress: 0,
-      todayReading: `Day 1: ${aiGoal} Introduction & Readings`,
-      description: `Custom AI-generated reading schedule tailored for ${aiDays} days on "${aiGoal}".`
+      description: `Custom AI-generated reading schedule tailored for ${aiDays} days on "${aiGoal}".`,
+      durationDays: aiDays,
+      kind: 'ai_generated',
+      isPublic: true,
     };
 
     setPlans([newPlan, ...plans]);
@@ -80,6 +97,16 @@ export default function PlansView() {
             ✨ Generate AI Plan
           </button>
         </div>
+
+        {/* Error Notification Banner */}
+        {error && (
+          <div style={{ background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#ef4444', padding: '12px 16px', borderRadius: '8px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>⚠️ {error}</span>
+            <button onClick={loadData} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '4px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}>
+              Retry
+            </button>
+          </div>
+        )}
 
         {/* AI Plan Generator Card */}
         {showAiModal && (
@@ -132,89 +159,105 @@ export default function PlansView() {
           </form>
         )}
 
-        {/* Active Today Reading Card */}
-        <div className="card" style={{ background: 'var(--parchment-deep)', border: '2px solid var(--gold)', borderRadius: '16px', padding: '24px', marginBottom: '32px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-            <span style={{ fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--gold)', fontWeight: 700 }}>
-              TODAY'S READING ASSIGNMENT
-            </span>
-            <span style={{ fontSize: '12px', background: 'var(--moss)', color: '#fff', padding: '3px 10px', borderRadius: '6px', fontWeight: 600 }}>
-              {activePlan.category}
-            </span>
+        {/* Loading Indicator */}
+        {loading && (
+          <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--ink-soft)' }}>
+            <i className="ti ti-loader-2 spin" style={{ fontSize: '28px', display: 'block', marginBottom: '12px' }} />
+            <span>Loading reading plans & progress...</span>
           </div>
+        )}
 
-          <h3 style={{ fontSize: '20px', color: 'var(--ink)', fontWeight: 600, marginBottom: '6px' }}>
-            {activePlan.title}
-          </h3>
-
-          <div style={{ fontSize: '16px', color: 'var(--moss)', fontWeight: 600, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            📖 Passage for Today: <span style={{ color: 'var(--ink)' }}>{activePlan.todayReading}</span>
-          </div>
-
-          {/* Progress Bar */}
-          <div style={{ marginBottom: '18px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.5px', color: 'var(--ink-soft)', marginBottom: '6px' }}>
-              <span>Plan Progress</span>
-              <span>{activePlan.progress}% Complete</span>
+        {/* Active Plan Progress Card */}
+        {!loading && activePlan && (
+          <div className="card" style={{ background: 'var(--parchment-deep)', border: '2px solid var(--gold)', borderRadius: '16px', padding: '24px', marginBottom: '32px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <span style={{ fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--gold)', fontWeight: 700 }}>
+                ACTIVE READING ASSIGNMENT (DAY {planProgress?.currentDay || 1})
+              </span>
+              <span style={{ fontSize: '12px', background: 'var(--moss)', color: '#fff', padding: '3px 10px', borderRadius: '6px', fontWeight: 600 }}>
+                {activePlan.kind}
+              </span>
             </div>
-            <div style={{ width: '100%', height: '8px', background: 'var(--line-strong)', borderRadius: '999px', overflow: 'hidden' }}>
-              <div style={{ width: `${activePlan.progress}%`, height: '100%', background: 'var(--gold)', borderRadius: '999px' }}></div>
+
+            <h3 style={{ fontSize: '20px', color: 'var(--ink)', fontWeight: 600, marginBottom: '6px' }}>
+              {activePlan.title}
+            </h3>
+
+            <div style={{ fontSize: '14px', color: 'var(--ink-soft)', marginBottom: '16px' }}>
+              {activePlan.description}
             </div>
-          </div>
 
-          <button
-            onClick={() => setCompletedToday(!completedToday)}
-            style={{
-              width: '100%',
-              padding: '12px',
-              borderRadius: '8px',
-              border: 'none',
-              background: completedToday ? 'var(--moss)' : 'var(--gold)',
-              color: completedToday ? '#fff' : '#2B2420',
-              fontWeight: 600,
-              fontSize: '14px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px'
-            }}
-          >
-            <i className={completedToday ? "ti ti-circle-check" : "ti ti-check"}></i>
-            {completedToday ? "Completed Today's Reading! 🎉" : "Mark Today's Reading Complete"}
-          </button>
-        </div>
+            {/* Progress Bar */}
+            <div style={{ marginBottom: '18px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12.5px', color: 'var(--ink-soft)', marginBottom: '6px' }}>
+                <span>Plan Progress</span>
+                <span>{percentComplete}% Complete ({planProgress?.completedDays?.length || 0} / {activePlan.durationDays} days)</span>
+              </div>
+              <div style={{ width: '100%', height: '8px', background: 'var(--line-strong)', borderRadius: '999px', overflow: 'hidden' }}>
+                <div style={{ width: `${percentComplete}%`, height: '100%', background: 'var(--gold)', borderRadius: '999px' }}></div>
+              </div>
+            </div>
 
-        {/* All Plans Grid */}
-        <h3 style={{ fontSize: '20px', color: 'var(--ink)', marginBottom: '16px', fontWeight: 600 }}>
-          Available Reading Plans
-        </h3>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {plans.map((p) => (
-            <div
-              key={p.id}
-              className="card"
-              onClick={() => setActivePlanId(p.id)}
+            <button
+              onClick={handleToggleCompleteDay}
               style={{
-                background: 'var(--bg-card)',
-                border: activePlanId === p.id ? '2px solid var(--moss)' : '1px solid var(--line-strong)',
-                borderRadius: '12px',
-                padding: '20px',
+                width: '100%',
+                padding: '12px',
+                borderRadius: '8px',
+                border: 'none',
+                background: planProgress?.completedDays?.includes(planProgress?.currentDay) ? 'var(--moss)' : 'var(--gold)',
+                color: '#fff',
+                fontWeight: 600,
+                fontSize: '14px',
                 cursor: 'pointer',
-                transition: 'all 0.2s ease'
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <h4 style={{ fontSize: '17px', color: 'var(--ink)', fontWeight: 600 }}>{p.title}</h4>
-                <span style={{ fontSize: '12px', color: 'var(--gold)', fontWeight: 600 }}>{p.duration}</span>
-              </div>
-              <p style={{ fontSize: '14px', color: 'var(--ink-soft)', lineHeight: 1.6 }}>
-                {p.description}
-              </p>
+              <i className="ti ti-check" />
+              {planProgress?.completedDays?.includes(planProgress?.currentDay)
+                ? `Day ${planProgress.currentDay} Completed! 🎉`
+                : `Complete Day ${planProgress?.currentDay || 1} Reading`}
+            </button>
+          </div>
+        )}
+
+        {/* All Available Plans List */}
+        {!loading && (
+          <>
+            <h3 style={{ fontSize: '20px', color: 'var(--ink)', marginBottom: '16px', fontWeight: 600 }}>
+              Available Reading Plans
+            </h3>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {plans.map((p) => (
+                <div
+                  key={p.id}
+                  className="card"
+                  onClick={() => handleSelectPlan(p.id)}
+                  style={{
+                    background: 'var(--bg-card)',
+                    border: activePlanId === p.id ? '2px solid var(--moss)' : '1px solid var(--line-strong)',
+                    borderRadius: '12px',
+                    padding: '20px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <h4 style={{ fontSize: '17px', color: 'var(--ink)', fontWeight: 600 }}>{p.title}</h4>
+                    <span style={{ fontSize: '12px', color: 'var(--gold)', fontWeight: 600 }}>{p.durationDays} Days</span>
+                  </div>
+                  <p style={{ fontSize: '14px', color: 'var(--ink-soft)', lineHeight: 1.6 }}>
+                    {p.description}
+                  </p>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </>
+        )}
 
       </div>
     </main>

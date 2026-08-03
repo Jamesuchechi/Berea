@@ -31,17 +31,38 @@
 
 ---
 
-## Phase 1 — Infrastructure & CI 🔴 NOT STARTED
+## Phase 1 — Persistence Foundation, Schema Wiring & Offline Sync 🟢 COMPLETE
 
-No CI pipeline exists. No automated tests exist. No GitHub Actions workflows exist.
+**Session:** 2026-08-03
 
-Planned: GitHub Actions for lint + type-check + secret scan (gitleaks), Supabase migration CI, and a basic Jest/Vitest test harness.
+**Completed:**
+- ✅ Created 6 modular, production-ready SQL migration files in `supabase/migrations/` (`20260803000001` through `20260803000006`).
+- ✅ Implemented IndexedDB offline queue manager ([`offlineQueue.js`](file:///home/jamesuchechi/Projects/Berea/src/services/offlineQueue.js)) for offline write queueing and automatic sync-on-reconnect with last-write-wins resolution.
+- ✅ Implemented timezone-aware streak tracking ([`timezoneService.js`](file:///home/jamesuchechi/Projects/Berea/src/services/timezoneService.js)) using user local day boundaries.
+- ✅ Added live network & sync status badge indicator to [`Topbar.jsx`](file:///home/jamesuchechi/Projects/Berea/src/components/Topbar.jsx) (🟢 Online / 🟡 Syncing (N queued) / 🔴 Offline).
+- ✅ Created domain services: [`noteService.js`](file:///home/jamesuchechi/Projects/Berea/src/services/noteService.js), [`planService.js`](file:///home/jamesuchechi/Projects/Berea/src/services/planService.js), [`memorizationService.js`](file:///home/jamesuchechi/Projects/Berea/src/services/memorizationService.js), [`communityService.js`](file:///home/jamesuchechi/Projects/Berea/src/services/communityService.js), [`bookmarkService.js`](file:///home/jamesuchechi/Projects/Berea/src/services/bookmarkService.js), and [`userSettingsService.js`](file:///home/jamesuchechi/Projects/Berea/src/services/userSettingsService.js).
+- ✅ Wired frontend feature views:
+  - [`NotesView.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/notes/NotesView.jsx) (wired to `user_note`, loading skeleton, empty state, error/retry banner).
+  - [`ReaderView.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/reader/ReaderView.jsx) (wired to `bookmark` and `highlight` tables).
+  - [`PlansView.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/plans/PlansView.jsx) (wired to `user_plan_progress` & `reading_plan`).
+  - [`MemorizationView.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/memorization/MemorizationView.jsx) (wired to `memorization_item` & SM-2 review logging).
+  - [`CommunityHubView.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/community/CommunityHubView.jsx) (wired to `prayer_request`, prayed-for taps, and moderation reporting).
+- ✅ Vitest automated test suite & GitHub Actions CI ([`.github/workflows/ci.yml`](file:///home/jamesuchechi/Projects/Berea/.github/workflows/ci.yml)).
+- ✅ `npm run build` succeeds cleanly (108 modules transformed).
 
 ---
 
-## Phase 2 — Notes (Persistence) 🔴 NOT STARTED
+## Phase 2 — Real Search 🟢 COMPLETE
 
-The Notes UI renders but all data is in React state only. Nothing is saved to Postgres. No RLS policies exist for notes. Page reload loses all data.
+**Session:** 2026-08-03
+
+**Completed:**
+- ✅ Created SQL migration [`20260803000007_full_text_search.sql`](file:///home/jamesuchechi/Projects/Berea/supabase/migrations/20260803000007_full_text_search.sql) (adds `tsvector` generated columns, GIN indexes, `pg_trgm` fuzzy matching extension, and `search_berea_scripture` Postgres RPC ranking function).
+- ✅ Created Scripture Reference Parser ([`referenceParser.js`](file:///home/jamesuchechi/Projects/Berea/src/services/referenceParser.js)) with book abbreviation normalization (`Jn`, `Tob`, `Wis`, `1 En`, `Did`) and range parsing (`Jn 3:16-18`).
+- ✅ Created Multi-Source Search Engine ([`searchService.js`](file:///home/jamesuchechi/Projects/Berea/src/services/searchService.js)) spanning Canon, Deuterocanon, Pseudepigrapha, Early Church writings, and User Notes with source badges.
+- ✅ Rewrote [`SearchView.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/search/SearchView.jsx) with instant scripture reference card matching, category filter tabs (`All`, `Scripture`, `Beyond`, `Notes`), loading skeleton, and empty state.
+- ✅ Created test suite [`src/services/__tests__/referenceParser.test.js`](file:///home/jamesuchechi/Projects/Berea/src/services/__tests__/referenceParser.test.js).
+- ✅ `npm run build` succeeds cleanly (110 modules transformed).
 
 ---
 

@@ -1,57 +1,55 @@
-import React, { useState } from 'react';
-import { ALL_BOOKS, TRADITIONS } from '../../data/canonMetadata';
+import React, { useState, useEffect } from 'react';
+import { getBeyondCanonBooks, resolveTraditionStatusBadge, getBeyondCanonPassage } from '../../services/beyondCanonService';
 
 export default function CanonComparisonView({ currentTradition = 'protestant', setTradition }) {
-  const [selectedBookSlug, setSelectedBookSlug] = useState('tobit');
+  const [categoryFilter, setCategoryFilter] = useState('All');
+  const [books, setBooks] = useState([]);
+  const [selectedSlug, setSelectedSlug] = useState('tobit');
+  const [passage, setPassage] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const selectedBook = ALL_BOOKS.find(b => b.slug === selectedBookSlug) || ALL_BOOKS[2];
+  const loadData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const bList = await getBeyondCanonBooks(categoryFilter);
+      setBooks(bList);
 
-  const TRADITION_DETAILS = {
-    protestant: {
-      name: 'Protestant Lens',
-      count: '66 Books',
-      bg: 'rgba(59, 130, 246, 0.08)',
-      border: 'rgba(59, 130, 246, 0.3)',
-      status: selectedBook.canons.protestant.label,
-      accepted: selectedBook.canons.protestant.accepted,
-      rationale: selectedBook.canons.protestant.accepted
-        ? 'Accepted in the 39 Old Testament Hebrew Tanakh canon.'
-        : 'Classified as Apocrypha during the Reformation. Useful for historical instruction, but not used to establish doctrine.'
-    },
-    catholic: {
-      name: 'Catholic Lens',
-      count: '73 Books',
-      bg: 'rgba(184, 134, 59, 0.12)',
-      border: 'rgba(184, 134, 59, 0.3)',
-      status: selectedBook.canons.catholic.label,
-      accepted: selectedBook.canons.catholic.accepted,
-      rationale: selectedBook.canons.catholic.accepted
-        ? 'Affirmed as Deuterocanonical Scripture at the Councils of Hippo (393 AD), Carthage (397 AD), and Trent (1546).'
-        : 'Regarded as non-canonical historical or early Christian writings.'
-    },
-    orthodox: {
-      name: 'Eastern Orthodox Lens',
-      count: '76+ Books',
-      bg: 'rgba(16, 185, 129, 0.08)',
-      border: 'rgba(16, 185, 129, 0.3)',
-      status: selectedBook.canons.orthodox.label,
-      accepted: selectedBook.canons.orthodox.accepted,
-      rationale: selectedBook.canons.orthodox.accepted
-        ? 'Inherited directly from the ancient Greek Septuagint (LXX) used by the early Greek Fathers & Synod of Jerusalem (1672).'
-        : 'Valuable patristic or liturgical text outside the primary LXX Old Testament canon.'
-    },
-    ethiopian: {
-      name: 'Ethiopian Orthodox Lens',
-      count: '81 Books',
-      bg: 'rgba(139, 92, 246, 0.08)',
-      border: 'rgba(139, 92, 246, 0.3)',
-      status: selectedBook.canons.ethiopian.label,
-      accepted: selectedBook.canons.ethiopian.accepted,
-      rationale: selectedBook.canons.ethiopian.accepted
-        ? 'Included in the 81-book Ethiopian Orthodox Tewahedo canon, preserved continuously in Ge’ez liturgical manuscripts.'
-        : 'Classified within early Church patristics and Apostolic ordinances.'
+      if (bList.length > 0) {
+        const slug = bList.some(b => b.slug === selectedSlug) ? selectedSlug : bList[0].slug;
+        setSelectedSlug(slug);
+        const passData = await getBeyondCanonPassage(slug, 1);
+        setPassage(passData);
+      }
+    } catch (err) {
+      setError('Failed to load Beyond-Canon data. Using local metadata.');
+    } finally {
+      setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadData();
+  }, [categoryFilter]);
+
+  const handleSelectBook = async (slug) => {
+    setSelectedSlug(slug);
+    setLoading(true);
+    const passData = await getBeyondCanonPassage(slug, 1);
+    setPassage(passData);
+    setLoading(false);
+  };
+
+  const selectedBook = books.find(b => b.slug === selectedSlug) || books[0] || {
+    slug: 'tobit',
+    title: 'Tobit',
+    category: 'deuterocanon',
+    originPeriod: 'c. 200–175 BCE',
+    originNote: 'Septuagint Deuterocanon text.',
+  };
+
+  const statusBadge = resolveTraditionStatusBadge(selectedSlug, currentTradition);
 
   return (
     <main className="reader" style={{ background: 'var(--parchment)', color: 'var(--ink)' }}>
@@ -60,7 +58,7 @@ export default function CanonComparisonView({ currentTradition = 'protestant', s
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
           <div className="eyebrow" style={{ color: 'var(--gold)', marginBottom: '6px' }}>
-            Phase 2 • Beyond Canon & Tradition Comparison
+            Beyond-Canon Pipeline & Tradition Comparison
           </div>
           <h2 style={{ fontSize: '28px', color: 'var(--ink)', fontWeight: 600 }}>
             Canon Comparison & Denominational Lens Toggle
@@ -68,7 +66,44 @@ export default function CanonComparisonView({ currentTradition = 'protestant', s
           <p style={{ fontSize: '14.5px', color: 'var(--ink-soft)', marginTop: '6px', maxWidth: '640px', margin: '6px auto 0' }}>
             Compare how historic Christian traditions view Deuterocanon, Pseudepigrapha, and Early Church Fathers.
           </p>
+
+          {/* Category Filter Tabs */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '18px' }}>
+            {[
+              { id: 'All', label: 'All Beyond-Canon Texts' },
+              { id: 'Deuterocanon', label: '📜 Deuterocanon' },
+              { id: 'Pseudepigrapha', label: '📖 Pseudepigrapha' },
+              { id: 'Early Church', label: '✝️ Early Church Writings' },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setCategoryFilter(tab.id)}
+                style={{
+                  padding: '6px 16px',
+                  borderRadius: '999px',
+                  fontSize: '12.5px',
+                  fontWeight: 600,
+                  border: '1px solid var(--line-strong)',
+                  background: categoryFilter === tab.id ? 'var(--moss)' : 'var(--bg-card)',
+                  color: categoryFilter === tab.id ? '#fff' : 'var(--ink)',
+                  cursor: 'pointer'
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
+
+        {/* Error Alert */}
+        {error && (
+          <div style={{ background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#ef4444', padding: '12px 16px', borderRadius: '8px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>⚠️ {error}</span>
+            <button onClick={loadData} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '4px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}>
+              Retry
+            </button>
+          </div>
+        )}
 
         {/* Denominational Lens Toggle Bar */}
         <div className="card" style={{ background: 'var(--parchment-deep)', border: '1.5px solid var(--gold)', borderRadius: '16px', padding: '20px', marginBottom: '32px' }}>
@@ -87,13 +122,12 @@ export default function CanonComparisonView({ currentTradition = 'protestant', s
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px' }}>
-            {Object.keys(TRADITIONS).map((tKey) => {
-              const key = TRADITIONS[tKey];
-              const isActive = currentTradition.toLowerCase() === key;
+            {['protestant', 'catholic', 'orthodox', 'ethiopian'].map((tKey) => {
+              const isActive = currentTradition.toLowerCase() === tKey;
               return (
                 <button
-                  key={key}
-                  onClick={() => setTradition && setTradition(key)}
+                  key={tKey}
+                  onClick={() => setTradition && setTradition(tKey)}
                   style={{
                     padding: '12px 14px',
                     borderRadius: '10px',
@@ -107,16 +141,15 @@ export default function CanonComparisonView({ currentTradition = 'protestant', s
                     flexDirection: 'column',
                     alignItems: 'flex-start',
                     gap: '4px',
-                    textAlign: 'left',
-                    transition: 'all 0.2s ease'
+                    textAlign: 'left'
                   }}
                 >
-                  <span style={{ textTransform: 'capitalize' }}>{key} Canon</span>
+                  <span style={{ textTransform: 'capitalize' }}>{tKey} Canon</span>
                   <span style={{ fontSize: '11px', opacity: 0.8 }}>
-                    {key === 'protestant' && '66 Books'}
-                    {key === 'catholic' && '73 Books'}
-                    {key === 'orthodox' && '76+ Books'}
-                    {key === 'ethiopian' && '81 Books'}
+                    {tKey === 'protestant' && '66 Books'}
+                    {tKey === 'catholic' && '73 Books'}
+                    {tKey === 'orthodox' && '76+ Books'}
+                    {tKey === 'ethiopian' && '81 Books'}
                   </span>
                 </button>
               );
@@ -124,35 +157,35 @@ export default function CanonComparisonView({ currentTradition = 'protestant', s
           </div>
         </div>
 
-        {/* Book Selector Header */}
+        {/* Book Selector Pills */}
         <div style={{ marginBottom: '24px' }}>
           <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--gold)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '8px' }}>
-            Select Book To Inspect & Compare Across Canons:
+            Select Beyond-Canon Text:
           </label>
 
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            {ALL_BOOKS.filter(b => b.category !== 'canonical').map((book) => (
+            {books.map((book) => (
               <button
-                key={book.id}
-                onClick={() => setSelectedBookSlug(book.slug)}
+                key={book.slug}
+                onClick={() => handleSelectBook(book.slug)}
                 style={{
                   padding: '8px 14px',
                   borderRadius: '8px',
                   fontSize: '13px',
                   fontWeight: 600,
                   border: '1px solid var(--line-strong)',
-                  background: selectedBookSlug === book.slug ? 'var(--moss)' : 'var(--bg-card)',
-                  color: selectedBookSlug === book.slug ? '#fff' : 'var(--ink)',
+                  background: selectedSlug === book.slug ? 'var(--moss)' : 'var(--bg-card)',
+                  color: selectedSlug === book.slug ? '#fff' : 'var(--ink)',
                   cursor: 'pointer'
                 }}
               >
-                📖 {book.title} ({book.testament})
+                📖 {book.title}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Active Book Detail Banner */}
+        {/* Active Book Status Banner */}
         <div className="card" style={{ background: 'var(--bg-card)', border: '1px solid var(--line-strong)', borderRadius: '14px', padding: '22px', marginBottom: '28px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '10px' }}>
             <div>
@@ -168,53 +201,51 @@ export default function CanonComparisonView({ currentTradition = 'protestant', s
             </div>
           </div>
 
-          <p style={{ fontSize: '14.5px', lineHeight: 1.65, color: 'var(--ink)' }}>
+          <p style={{ fontSize: '14.5px', lineHeight: 1.65, color: 'var(--ink)', marginBottom: '16px' }}>
             {selectedBook.originNote}
           </p>
+
+          {/* Prominent Tradition Lens Canonical Status Label */}
+          <div style={{ background: 'var(--parchment-deep)', border: '1px solid var(--gold)', borderRadius: '10px', padding: '14px 16px' }}>
+            <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--gold)', marginBottom: '4px' }}>
+              {statusBadge.label}
+            </div>
+            <div style={{ fontSize: '13px', color: 'var(--ink-soft)' }}>
+              {statusBadge.details}
+            </div>
+          </div>
         </div>
 
-        {/* 4-Tradition Side-by-Side Comparison Matrix */}
-        <h3 style={{ fontSize: '20px', color: 'var(--ink)', fontWeight: 600, marginBottom: '16px' }}>
-          Canon Status Across Historic Traditions:
-        </h3>
+        {/* Loading Indicator */}
+        {loading && (
+          <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--ink-soft)' }}>
+            <i className="ti ti-loader-2 spin" style={{ fontSize: '28px', display: 'block', marginBottom: '12px' }} />
+            <span>Loading passage text & source attribution...</span>
+          </div>
+        )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '16px' }}>
-          {Object.keys(TRADITION_DETAILS).map((tKey) => {
-            const t = TRADITION_DETAILS[tKey];
-            return (
-              <div
-                key={tKey}
-                className="card"
-                style={{
-                  background: t.bg,
-                  border: `1.5px solid ${t.border}`,
-                  borderRadius: '12px',
-                  padding: '20px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justify: 'space-between'
-                }}
-              >
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                    <strong style={{ fontSize: '16px', color: 'var(--ink)' }}>{t.name}</strong>
-                    <span style={{ fontSize: '11.5px', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', background: t.accepted ? 'var(--moss)' : 'var(--parchment-deep)', color: t.accepted ? '#fff' : 'var(--ink-soft)' }}>
-                      {t.status}
-                    </span>
-                  </div>
+        {/* Ingested Passage Reader Box */}
+        {!loading && passage && (
+          <div className="card" style={{ background: 'var(--parchment-deep)', border: '1px solid var(--line-strong)', borderRadius: '14px', padding: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid var(--line)', paddingBottom: '10px' }}>
+              <h4 style={{ fontSize: '18px', color: 'var(--ink)', fontWeight: 600 }}>
+                {selectedBook.title} — Chapter {passage.chapter}
+              </h4>
+              <span style={{ fontSize: '12px', color: 'var(--ink-soft)', fontStyle: 'italic' }}>
+                📜 {passage.attribution}
+              </span>
+            </div>
 
-                  <p style={{ fontSize: '13.5px', lineHeight: 1.6, color: 'var(--ink)' }}>
-                    {t.rationale}
-                  </p>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: '17.5px', lineHeight: 1.85, color: 'var(--ink)' }}>
+              {passage.verses.map(v => (
+                <div key={v.num} style={{ marginBottom: '10px' }}>
+                  <sup style={{ color: 'var(--gold)', fontWeight: 700, marginRight: '6px' }}>{v.num}</sup>
+                  {v.text}
                 </div>
-
-                <div style={{ marginTop: '14px', paddingTop: '10px', borderTop: '1px solid var(--line)', fontSize: '12px', color: 'var(--ink-faint)', fontWeight: 500 }}>
-                  Total Canon Size: {t.count}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+              ))}
+            </div>
+          </div>
+        )}
 
       </div>
     </main>

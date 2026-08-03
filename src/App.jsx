@@ -20,6 +20,7 @@ import AccessibilitySettingsView from './features/settings/AccessibilitySettings
 import CommunityHubView from './features/community/CommunityHubView';
 
 import { listenToAuthState, signOutUser } from './services/authService';
+import { getUserSettings, updateUserSettings, recordReadingActivity } from './services/userSettingsService';
 
 export default function App() {
   const [route, setRoute] = useState('landing'); // 'landing' | 'login' | 'signup' | 'verify-email' | 'app'
@@ -42,16 +43,29 @@ export default function App() {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('berea_theme', theme);
+    updateUserSettings({ theme });
   }, [theme]);
 
-  // Real Supabase Auth State Change Listener (OAuth Callback Handler)
+  useEffect(() => {
+    updateUserSettings({ tradition });
+  }, [tradition]);
+
+  // Real Supabase Auth State Change Listener & Settings Hydration
   useEffect(() => {
     const { data: authListener } = listenToAuthState((event, session) => {
       if (session?.user) {
         setIsAuthenticated(true);
         localStorage.setItem('berea_auth', 'true');
-        // If coming back from Google OAuth redirect, route to app
+        
+        // Hydrate settings from remote DB on login
+        getUserSettings().then(settings => {
+          if (settings.theme) setTheme(settings.theme);
+          if (settings.tradition) setTradition(settings.tradition);
+        });
+
+        // Record activity for streak tracking
+        recordReadingActivity();
+
         if (event === 'SIGNED_IN') {
           setHydrating(true);
           setRoute('app');

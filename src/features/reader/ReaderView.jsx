@@ -3,6 +3,7 @@ import { getChapterPassage } from '../../services/bibleService';
 import { getBookBySlug, getChapterCount } from '../../data/canonMetadata';
 import BookPickerModal from './BookPickerModal';
 import ChapterPickerModal from './ChapterPickerModal';
+import { addBookmark, saveHighlight } from '../../services/bookmarkService';
 
 // Default opening passage
 const DEFAULT_BOOK_SLUG = 'john';
@@ -111,10 +112,21 @@ export default function ReaderView({
     }
   };
 
-  const toggleHighlight = (num) => {
-    setHighlightedVerses(prev =>
-      prev.includes(num) ? prev.filter(v => v !== num) : [...prev, num]
-    );
+  const toggleHighlight = async (num) => {
+    const nextHighlights = highlightedVerses.includes(num)
+      ? highlightedVerses.filter(v => v !== num)
+      : [...highlightedVerses, num];
+
+    setHighlightedVerses(nextHighlights);
+
+    if (selectedBook) {
+      await saveHighlight({
+        bookSlug: selectedBook.slug,
+        chapter: selectedChapter,
+        verseNumber: num,
+        color: 'amber',
+      });
+    }
   };
 
   const maxChapters = selectedBook ? getChapterCount(selectedBook.slug) : 1;
