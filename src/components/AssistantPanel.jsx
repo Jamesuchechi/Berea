@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { buildAIContext, askAIContextualAssistant } from '../lib/ai';
+import { createAIConversation, getAIMessages, appendAIMessage } from '../services/aiConversationService';
 
 export default function AssistantPanel({
   assistantOpen,
@@ -10,6 +11,7 @@ export default function AssistantPanel({
   currentChapter = 3,
   currentVerse = 16
 }) {
+  const [conversationId, setConversationId] = useState(null);
   const [messages, setMessages] = useState([
     {
       sender: 'assistant',
@@ -29,6 +31,23 @@ export default function AssistantPanel({
     return () => mq.removeEventListener('change', handler);
   }, []);
 
+  // Initialize conversation session
+  useEffect(() => {
+    let isMounted = true;
+    async function initConv() {
+      const { data } = await createAIConversation({ title: 'Study Session', book: currentBook, chapter: currentChapter });
+      if (data?.id && isMounted) {
+        setConversationId(data.id);
+        const { data: existingMsgs } = await getAIMessages(data.id);
+        if (existingMsgs && existingMsgs.length > 0) {
+          setMessages(existingMsgs.map(m => ({ sender: m.sender, text: m.content })));
+        }
+      }
+    }
+    initConv();
+    return () => { isMounted = false; };
+  }, [currentBook, currentChapter]);
+
   const executeTrigger = async (triggerType, userCustomText = null) => {
     if (loading) return;
 
@@ -45,6 +64,10 @@ export default function AssistantPanel({
     setMessages(prev => [...prev, { sender: 'user', text: userLabel }]);
     setLoading(true);
 
+    if (conversationId) {
+      await appendAIMessage({ conversationId, sender: 'user', content: userLabel });
+    }
+
     const contextPayload = buildAIContext({
       book: currentBook,
       chapter: currentChapter,
@@ -52,14 +75,19 @@ export default function AssistantPanel({
       translation,
       tradition: tradition.toLowerCase(),
       trigger: triggerType,
-      userInput: userCustomText || (triggerType === 'chat' ? userLabel : null)
+      userInput: userCustomText || (triggerType === 'chat' ? userLabel : null),
+      conversationId,
     });
 
     const response = await askAIContextualAssistant(contextPayload);
+    const replyText = response.message || response.reply;
     setMessages(prev => [
       ...prev,
-      { sender: 'assistant', text: response.message || response.reply }
+      { sender: 'assistant', text: replyText }
     ]);
+    if (conversationId) {
+      await appendAIMessage({ conversationId, sender: 'assistant', content: replyText });
+    }
     setLoading(false);
   };
 

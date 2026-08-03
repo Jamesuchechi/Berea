@@ -66,53 +66,78 @@
 
 ---
 
-## Phase 3 — AI Proxy & Semantic Search 🟡 PARTIAL
+## Phase 3 — Beyond-Canon Content Pipeline 🟢 COMPLETE
 
-- Edge Function skeleton exists (`supabase/functions/ai-assistant/`).
-- Now correctly calls Groq server-side with JWT auth (Phase 0 fix).
-- Semantic search is still a hardcoded 4-item array in `src/lib/ai.js`.
-- No pgvector, no real search. Phase 3 deliverable.
+**Session:** 2026-08-03
 
----
-
-## Phase 4 — Reading Plans 🔴 NOT STARTED
-
-Plans UI exists but data is in-memory only. No Postgres table, no RLS, no progress persistence.
-
----
-
-## Phase 5 — Beyond Canon / Apocrypha 🔴 NOT STARTED
-
-Sample content only — a handful of hardcoded strings. No real texts loaded, no source attribution, no canon-boundary data model.
+**Completed:**
+- ✅ Ingestion service ([`ingestionService.js`](file:///home/jamesuchechi/Projects/Berea/src/services/ingestionService.js)): raw text parser → chapter & verse segmenter → QA count validator → Supabase inserter.
+- ✅ Automated QA check validating chapter/verse counts against reference standards (Didache, Tobit, 1 Enoch, Jubilees, Wisdom, Sirach).
+- ✅ Migration [`20260803000008_beyond_canon_pipeline.sql`](file:///home/jamesuchechi/Projects/Berea/supabase/migrations/20260803000008_beyond_canon_pipeline.sql) added attribution columns to `translation` table.
+- ✅ Expanded Beyond-Canon service ([`beyondCanonService.js`](file:///home/jamesuchechi/Projects/Berea/src/services/beyondCanonService.js)) with tradition-lens filtering and canonical status mapping (`protestant`, `catholic`, `orthodox`, `ethiopian`).
+- ✅ Dynamic tradition status badge rendering in [`CanonComparisonView.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/apocrypha/CanonComparisonView.jsx).
+- ✅ Created test suite [`src/services/__tests__/beyondCanonService.test.js`](file:///home/jamesuchechi/Projects/Berea/src/services/__tests__/beyondCanonService.test.js).
 
 ---
 
-## Phase 6 — Interlinear / Languages 🔴 NOT STARTED
+## Phase 4 — Real AI Assistant & Semantic Search 🟢 COMPLETE
 
-UI shell exists. No actual Greek/Hebrew data pipeline. No morphology database connected.
+**Session:** 2026-08-03
 
----
-
-## Phase 7 — Memorization 🔴 NOT STARTED
-
-UI shell exists. No spaced-repetition logic, no persistence, no scheduling.
-
----
-
-## Phase 8 — Community Hub 🔴 NOT STARTED
-
-UI shell exists. No real-time features, no Postgres data, no moderation.
+**Completed:**
+- ✅ Supabase Edge Function proxy ([`supabase/functions/ai-assistant/index.ts`](file:///home/jamesuchechi/Projects/Berea/supabase/functions/ai-assistant/index.ts)): enforces caller Supabase JWT authentication (`401` on invalid/missing auth), server-side Groq call using `GROQ_API_KEY`, per-user token-bucket rate-limiting, and deterministic trigger response caching.
+- ✅ Created SQL migration [`20260803000009_ai_semantic_search.sql`](file:///home/jamesuchechi/Projects/Berea/supabase/migrations/20260803000009_ai_semantic_search.sql): enables `vector` (pgvector) extension, adds `embedding` columns, creates `ai_rate_limit` and `ai_response_cache` tables with RLS policies, and implements Postgres RPC `match_semantic_verses` for vector & hybrid similarity search.
+- ✅ AI Conversation Persistence Service ([`aiConversationService.js`](file:///home/jamesuchechi/Projects/Berea/src/services/aiConversationService.js)): manages `ai_conversation` and `ai_message` database records with optimistic offline fallback.
+- ✅ Client AI Engine ([`src/lib/ai.js`](file:///home/jamesuchechi/Projects/Berea/src/lib/ai.js)): replaced hardcoded 4-item array with real vector/hybrid semantic search engine querying database RPC with fallback.
+- ✅ Connected [`AIHubView.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/ai/AIHubView.jsx) to persistent conversation history, rate limit tracking, and streaming assistant support.
+- ✅ Guardrail Regression Eval Suite ([`src/services/__tests__/aiGuardrails.test.js`](file:///home/jamesuchechi/Projects/Berea/src/services/__tests__/aiGuardrails.test.js)): 35 contested-topic prompt test cases verifying multi-tradition neutrality, reverent tone, and non-dogmatic responses across traditions.
 
 ---
 
-## Phase 9 — Security Review & Hardening 🔴 NOT STARTED
+## Phase 5 — Real Original-Language Tools 🟢 COMPLETE
 
-Required before any production launch touching money, user content, or private data.
+**Session:** 2026-08-03
+
+**Completed:**
+- ✅ Migration [`20260803000010_original_language_lexicon.sql`](file:///home/jamesuchechi/Projects/Berea/supabase/migrations/20260803000010_original_language_lexicon.sql): created `lexicon` (Strong's dictionary entries) and `interlinear_word` tables with public read RLS policies.
+- ✅ OpenScriptures & STEP Bible lexicon dataset ([`lexiconData.js`](file:///home/jamesuchechi/Projects/Berea/src/data/lexiconData.js)): Strong's concordance dictionary mapping Greek (G) and Hebrew (H) lemmas, transliterations, pronunciations, parts of speech, and etymology.
+- ✅ Language Service ([`languageService.js`](file:///home/jamesuchechi/Projects/Berea/src/services/languageService.js)): data-driven interlinear passage resolver for any book/chapter/verse in Greek (LTR) or Hebrew (RTL), Strong's entry lookup, and SpeechSynthesis audio pronunciation speaker.
+- ✅ Interactive Interlinear Inspector ([`InterlinearView.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/languages/InterlinearView.jsx)): dynamic book/chapter/verse navigation, Greek/Hebrew word tiles, Strong's concordance badges, interactive lexicon drawer, and TTS audio buttons.
+- ✅ Reader View Integration ([`ReaderView.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/reader/ReaderView.jsx)): added "View Interlinear" button on verse selection toolbar navigating directly to `InterlinearView` populated with the active verse.
+- ✅ Created test suite [`src/services/__tests__/languageService.test.js`](file:///home/jamesuchechi/Projects/Berea/src/services/__tests__/languageService.test.js).
 
 ---
 
-## Phase 10 — PWA / Performance 🟡 PARTIAL
+## Phase 6 — Real Diagrams & Maps 🔴 NOT STARTED
 
-- PWA manifest and service worker config exist via `vite-plugin-pwa`.
-- Icons are uncompressed (~495 KB each) — degrades first load significantly. Phase 0 fix pending.
-- Lighthouse score not yet measured against baselines.
+Genealogy and timeline text cards exist. No SVG graph layout engine, MapLibre/Leaflet maps, or dynamic diagram definitions yet.
+
+---
+
+## Phase 7 — Reading Plans, Memorization, Notes: Deepen Past the Demo 🔴 NOT STARTED
+
+Phase 1 persistence landed. Catch-up logic, web push notifications, and export options pending.
+
+---
+
+## Phase 8 — Accessibility & Engagement 🔴 NOT STARTED
+
+TTS for verse reader exists. Arbitrary content TTS, persisted accessibility settings across devices, and push notification delivery pending.
+
+---
+
+## Phase 9 — Community: Build Moderation Layer Before Posting UI 🔴 NOT STARTED
+
+Prayer wall persistence and flagging landed in Phase 1. Admin review queue and posting rate limits pending.
+
+---
+
+## Phase 10 — Testing & CI 🟡 PARTIAL
+
+Vitest unit test runner setup, GitHub Actions CI workflow ([`.github/workflows/ci.yml`](file:///home/jamesuchechi/Projects/Berea/.github/workflows/ci.yml)), and guardrail regression eval suite.
+
+---
+
+## Phase 11 — Security Review 🔴 NOT STARTED
+
+Required before production launch. RLS policy audit, CSP headers, rate-limiting on auth endpoints pending.

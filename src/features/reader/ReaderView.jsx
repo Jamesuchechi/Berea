@@ -16,7 +16,8 @@ export default function ReaderView({
   onNavigationChange = null,
   // Triggered from Topbar breadcrumb click
   triggerOpenPicker = false,
-  onPickerOpened = null
+  onPickerOpened = null,
+  onNavigateInterlinear = null,
 }) {
   const [selectedBook, setSelectedBook] = useState(() => getBookBySlug(DEFAULT_BOOK_SLUG));
   const [selectedChapter, setSelectedChapter] = useState(DEFAULT_CHAPTER);
@@ -465,6 +466,20 @@ export default function ReaderView({
                   >
                     <i className="ti ti-copy" style={{ color: accentColor }} /> Copy
                   </button>
+                  {onNavigateInterlinear && (
+                    <button
+                      onClick={() => onNavigateInterlinear({ book: selectedBook?.slug, chapter: selectedChapter, verse: activeVerse })}
+                      style={{
+                        background: 'var(--parchment)', color: 'var(--ink)',
+                        border: '1px solid var(--line-strong)', padding: '7px 14px',
+                        borderRadius: '8px', cursor: 'pointer', fontSize: '13px',
+                        fontWeight: 600, fontFamily: 'inherit',
+                        display: 'flex', alignItems: 'center', gap: '5px'
+                      }}
+                    >
+                      <i className="ti ti-language" style={{ color: accentColor }} /> View Interlinear
+                    </button>
+                  )}
                 </div>
               )}
 

@@ -37,6 +37,6 @@ describe('beyondCanonService', () => {
   it('should resolve 1 Enoch as Canonical under Ethiopian lens', () => {
     const ethiopianBadge = resolveTraditionStatusBadge('1_enoch', 'ethiopian');
     expect(ethiopianBadge.isCanonical).toBe(true);
-    expect(ethiopianBadge.label).toContain('Ethiopian');
+    expect(ethiopianBadge.label).toContain('Tewahedo');
   });
 });

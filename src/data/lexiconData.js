@@ -1,0 +1,108 @@
+/**
+ * OpenScriptures / STEP Bible Open-Licensed Strong's Concordance Lexicon & Interlinear Corpus Data
+ */
+
+export const STRONGS_LEXICON = {
+  // Greek (G) Entries
+  G3779: { strongsId: 'G3779', language: 'greek', lemma: 'Οὕτως', transliteration: 'houtōs', pronunciation: 'hoo’-to', partOfSpeech: 'Adverb', shortDef: 'thus, so, in this manner', definition: 'In this manner, so, thus, in this way. Demonstrative adverb of manner from G3778.', derivation: 'Adverb from G3778' },
+  G1063: { strongsId: 'G1063', language: 'greek', lemma: 'γάρ', transliteration: 'gar', pronunciation: 'gar', partOfSpeech: 'Conjunction', shortDef: 'for, indeed', definition: 'For, indeed, giving a reason or explanatory statement.', derivation: 'Primary particle' },
+  G25: { strongsId: 'G25', language: 'greek', lemma: 'ἀγαπάω', transliteration: 'agapaō', pronunciation: 'ag-ap-ah’-o', partOfSpeech: 'Verb', shortDef: 'to love, value, cherish', definition: 'To love unconditionally, value, cherish, hold in highest regard; divine covenant love.', derivation: 'From agape (love)' },
+  G3588: { strongsId: 'G3588', language: 'greek', lemma: 'ὁ, ἡ, τό', transliteration: 'ho', pronunciation: 'ho', partOfSpeech: 'Article', shortDef: 'the', definition: 'The definite article: the, this, that.', derivation: 'Primary demonstrative article' },
+  G2316: { strongsId: 'G2316', language: 'greek', lemma: 'Θεός', transliteration: 'Theos', pronunciation: 'the-os’', partOfSpeech: 'Noun (Masculine)', shortDef: 'God, Supreme Divinity', definition: 'God, the Supreme Creator and Sovereign Ruler of the universe.', derivation: 'Of uncertain affinity; a deity' },
+  G5207: { strongsId: 'G5207', language: 'greek', lemma: 'υἱός', transliteration: 'huios', pronunciation: 'hwee-os’', partOfSpeech: 'Noun (Masculine)', shortDef: 'son, offspring, heir', definition: 'Son, offspring, direct male descendant, divine heir.', derivation: 'Primary word' },
+  G3439: { strongsId: 'G3439', language: 'greek', lemma: 'μονογενής', transliteration: 'monogenēs', pronunciation: 'mon-og-en-ace’', partOfSpeech: 'Adjective', shortDef: 'only begotten, unique', definition: 'Unique, sole of its kind, one and only, unique relationship.', derivation: 'From G3441 and G1096' },
+  G1325: { strongsId: 'G1325', language: 'greek', lemma: 'δίδωμι', transliteration: 'didōmi', pronunciation: 'dee’-do-mee', partOfSpeech: 'Verb', shortDef: 'to give, bestow, offer', definition: 'To give, bestow, grant, offer freely of one’s own accord.', derivation: 'Primary verb' },
+  G3004: { strongsId: 'G3004', language: 'greek', lemma: 'λέγω', transliteration: 'legō', pronunciation: 'leg’-o', partOfSpeech: 'Verb', shortDef: 'to speak, say, declare', definition: 'To speak, say, declare, discourse, hold converse.', derivation: 'Primary verb' },
+  G4100: { strongsId: 'G4100', language: 'greek', lemma: 'πιστεύω', transliteration: 'pisteuō', pronunciation: 'pist-yoo’-o', partOfSpeech: 'Verb', shortDef: 'to believe, trust, commit', definition: 'To believe, have faith in, place confidence and trust in.', derivation: 'From G4102 (pistis)' },
+  G2222: { strongsId: 'G2222', language: 'greek', lemma: 'ζωή', transliteration: 'zōē', pronunciation: 'dzoh-ay’', partOfSpeech: 'Noun (Feminine)', shortDef: 'life, eternal life', definition: 'Life, uncreated divine life, eternal principle of vitality.', derivation: 'From G2198 (zao)' },
+  G166: { strongsId: 'G166', language: 'greek', lemma: 'αἰώνιος', transliteration: 'aiōnios', pronunciation: 'ahe-o’-nee-os', partOfSpeech: 'Adjective', shortDef: 'eternal, everlasting', definition: 'Everlasting, eternal, age-abiding, without beginning or end.', derivation: 'From G165 (aion)' },
+
+  // Hebrew (H) Entries
+  H7225: { strongsId: 'H7225', language: 'hebrew', lemma: 'רֵאשִׁית', transliteration: "reshit", pronunciation: 'ray-sheeth’', partOfSpeech: 'Noun (Feminine)', shortDef: 'beginning, chief, first-fruit', definition: 'Beginning, first-fruits, chief part, principal item. From H7218 (rosh).', derivation: 'From H7218 (head/beginning)' },
+  H1254: { strongsId: 'H1254', language: 'hebrew', lemma: 'בָּרָא', transliteration: 'bara', pronunciation: 'baw-raw’', partOfSpeech: 'Verb (Qal)', shortDef: 'to create out of nothing', definition: 'To create, shape, form ex nihilo (divine creative act).', derivation: 'Primary root' },
+  H430: { strongsId: 'H430', language: 'hebrew', lemma: 'אֱלֹהִים', transliteration: 'Elohim', pronunciation: 'el-o-heem’', partOfSpeech: 'Noun (Plural)', shortDef: 'God, Supreme God', definition: 'God, Supreme Deity, Creator of heaven and earth (plural of majesty).', derivation: 'Plural of H433 (Eloah)' },
+  H853: { strongsId: 'H853', language: 'hebrew', lemma: 'אֵת', transliteration: 'et', pronunciation: 'ayth', partOfSpeech: 'Particle', shortDef: 'direct object marker', definition: 'Untranslated grammatical particle marking the direct object.', derivation: 'Uncertain origin' },
+  H8064: { strongsId: 'H8064', language: 'hebrew', lemma: 'שָׁמַיִם', transliteration: 'shamayim', pronunciation: 'shaw-mah’-yim', partOfSpeech: 'Noun (Dual)', shortDef: 'heavens, sky', definition: 'Heavens, sky, visible atmosphere, abode of God.', derivation: 'Dual of an unused singular' },
+  H776: { strongsId: 'H776', language: 'hebrew', lemma: 'אֶרֶץ', transliteration: 'eretz', pronunciation: 'eh’-retz', partOfSpeech: 'Noun (Feminine)', shortDef: 'earth, land, country', definition: 'Earth, land, ground, territory, physical world.', derivation: 'From an unused root' },
+  H3068: { strongsId: 'H3068', language: 'hebrew', lemma: 'יְהוָה', transliteration: 'Yahweh', pronunciation: 'ye-ho-vaw’', partOfSpeech: 'Proper Name', shortDef: 'LORD, Yahweh', definition: 'The self-existent, covenant-keeping God of Israel (YHWH).', derivation: 'From H1961 (to exist/be)' },
+  H7965: { strongsId: 'H7965', language: 'hebrew', lemma: 'שָׁלוֹם', transliteration: 'shalom', pronunciation: 'shaw-lome’', partOfSpeech: 'Noun (Masculine)', shortDef: 'peace, completeness, health', definition: 'Peace, completeness, soundness, welfare, tranquility of soul.', derivation: 'From H7999 (to be complete)' },
+};
+
+export const INTERLINEAR_CORPUS = {
+  'john-3-16': {
+    bookSlug: 'john',
+    bookTitle: 'John',
+    chapter: 3,
+    verseNumber: 16,
+    language: 'Greek (Koine)',
+    direction: 'ltr',
+    words: [
+      { order: 1, original: 'Οὕτως', translit: 'Houtōs', strongsId: 'G3779', gloss: 'For so', pos: 'Adverb' },
+      { order: 2, original: 'γὰρ', translit: 'gar', strongsId: 'G1063', gloss: 'for', pos: 'Conjunction' },
+      { order: 3, original: 'ἠγάπησεν', translit: 'ēgapēsen', strongsId: 'G25', gloss: 'loved', pos: 'Verb (Aorist Active)' },
+      { order: 4, original: 'ὁ', translit: 'ho', strongsId: 'G3588', gloss: 'the', pos: 'Article' },
+      { order: 5, original: 'Θεὸς', translit: 'Theos', strongsId: 'G2316', gloss: 'God', pos: 'Noun (Nominative)' },
+      { order: 6, original: 'τὸν', translit: 'ton', strongsId: 'G3588', gloss: 'the', pos: 'Article' },
+      { order: 7, original: 'Υἱὸν', translit: 'Huion', strongsId: 'G5207', gloss: 'Son', pos: 'Noun (Accusative)' },
+      { order: 8, original: 'τὸν', translit: 'ton', strongsId: 'G3588', gloss: 'the', pos: 'Article' },
+      { order: 9, original: 'μονογενῆ', translit: 'monogenē', strongsId: 'G3439', gloss: 'only begotten', pos: 'Adjective' },
+      { order: 10, original: 'ἔδωκεν', translit: 'edōken', strongsId: 'G1325', gloss: 'He gave', pos: 'Verb (Aorist Active)' },
+      { order: 11, original: 'ἵνα', translit: 'hina', strongsId: 'G2443', gloss: 'that', pos: 'Conjunction' },
+      { order: 12, original: 'πᾶς', translit: 'pas', strongsId: 'G3956', gloss: 'whoever', pos: 'Adjective' },
+      { order: 13, original: 'ὁ', translit: 'ho', strongsId: 'G3588', gloss: 'the one', pos: 'Article' },
+      { order: 14, original: 'πιστεύων', translit: 'pisteuōn', strongsId: 'G4100', gloss: 'believing', pos: 'Participle (Present)' },
+      { order: 15, original: 'εἰς', translit: 'eis', strongsId: 'G1519', gloss: 'in', pos: 'Preposition' },
+      { order: 16, original: 'αὐτὸν', translit: 'auton', strongsId: 'G846', gloss: 'Him', pos: 'Pronoun' },
+      { order: 17, original: 'ἔχῃ', translit: 'echē', strongsId: 'G2192', gloss: 'should have', pos: 'Verb (Subjunctive)' },
+      { order: 18, original: 'ζωὴν', translit: 'zōēn', strongsId: 'G2222', gloss: 'life', pos: 'Noun (Accusative)' },
+      { order: 19, original: 'αἰώνιον', translit: 'aiōnion', strongsId: 'G166', gloss: 'eternal', pos: 'Adjective' },
+    ],
+  },
+  'genesis-1-1': {
+    bookSlug: 'genesis',
+    bookTitle: 'Genesis',
+    chapter: 1,
+    verseNumber: 1,
+    language: 'Hebrew (Biblical)',
+    direction: 'rtl',
+    words: [
+      { order: 1, original: 'בְּרֵאשִׁית', translit: "B'reshit", strongsId: 'H7225', gloss: 'In the beginning', pos: 'Prep + Noun' },
+      { order: 2, original: 'בָּרָא', translit: 'Bara', strongsId: 'H1254', gloss: 'created', pos: 'Verb (Qal Perfect)' },
+      { order: 3, original: 'אֱלֹהִים', translit: 'Elohim', strongsId: 'H430', gloss: 'God', pos: 'Noun (Plural)' },
+      { order: 4, original: 'אֵת', translit: 'Et', strongsId: 'H853', gloss: '[obj]', pos: 'Particle' },
+      { order: 5, original: 'הַשָּׁמַיִם', translit: 'Hashamayim', strongsId: 'H8064', gloss: 'the heavens', pos: 'Noun (Dual)' },
+      { order: 6, original: 'וְאֵת', translit: "V'et", strongsId: 'H853', gloss: 'and', pos: 'Conj + Particle' },
+      { order: 7, original: 'הָאָרֶץ', translit: "Ha'aretz", strongsId: 'H776', gloss: 'the earth', pos: 'Noun' },
+    ],
+  },
+  'matthew-1-1': {
+    bookSlug: 'matthew',
+    bookTitle: 'Matthew',
+    chapter: 1,
+    verseNumber: 1,
+    language: 'Greek (Koine)',
+    direction: 'ltr',
+    words: [
+      { order: 1, original: 'Βίβλος', translit: 'Biblos', strongsId: 'G976', gloss: 'The book', pos: 'Noun' },
+      { order: 2, original: 'γενέσεως', translit: 'geneseōs', strongsId: 'G1078', gloss: 'of the genealogy', pos: 'Noun' },
+      { order: 3, original: 'Ἰησοῦ', translit: 'Iēsou', strongsId: 'G2424', gloss: 'of Jesus', pos: 'Proper Noun' },
+      { order: 4, original: 'Χριστοῦ', translit: 'Christou', strongsId: 'G5547', gloss: 'Christ', pos: 'Proper Noun' },
+      { order: 5, original: 'υἱοῦ', translit: 'huiou', strongsId: 'G5207', gloss: 'son', pos: 'Noun' },
+      { order: 6, original: 'Δαυίδ', translit: 'Dauid', strongsId: 'G1138', gloss: 'of David', pos: 'Proper Noun' },
+    ],
+  },
+  'psalm-23-1': {
+    bookSlug: 'psalms',
+    bookTitle: 'Psalms',
+    chapter: 23,
+    verseNumber: 1,
+    language: 'Hebrew (Biblical)',
+    direction: 'rtl',
+    words: [
+      { order: 1, original: 'יְהוָה', translit: 'Yahweh', strongsId: 'H3068', gloss: 'The LORD', pos: 'Proper Noun' },
+      { order: 2, original: 'רֹעִי', translit: "Ro'i", strongsId: 'H7462', gloss: 'is my shepherd', pos: 'Verb (Participle)' },
+      { order: 3, original: 'לֹא', translit: 'Lo', strongsId: 'H3808', gloss: 'not', pos: 'Adverb' },
+      { order: 4, original: 'אֶחְסָר', translit: 'Echsar', strongsId: 'H2637', gloss: 'I shall want', pos: 'Verb (Imperfect)' },
+    ],
+  },
+};

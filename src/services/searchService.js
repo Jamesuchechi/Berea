@@ -82,8 +82,14 @@ export async function performUnifiedSearch(query, filterCategory = 'All') {
   // 2. Perform Server-Side Supabase RPC FTS Search
   let remoteResults = [];
   try {
-    const { data, error } = await supabase
+    const rpcPromise = supabase
       .rpc('search_berea_scripture', { query_text: trimmed, limit_count: 40 });
+
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('RPC Timeout')), 1500)
+    );
+
+    const { data, error } = await Promise.race([rpcPromise, timeoutPromise]);
 
     if (!error && data && data.length > 0) {
       remoteResults = data.map(item => ({
@@ -97,7 +103,7 @@ export async function performUnifiedSearch(query, filterCategory = 'All') {
       }));
     }
   } catch (err) {
-    console.warn('[searchService] Server RPC search fallback to local corpus:', err);
+    // Graceful fallback to local corpus when RPC unavailable or timed out
   }
 
   // 3. Search Local/Static Corpus if remote gave 0 results

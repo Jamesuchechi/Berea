@@ -1,12 +1,5 @@
 // Supabase Edge Function: ai-assistant
-// Server-side proxy for Groq API — the GROQ_API_KEY never leaves the server.
-// Follows the AI context interface defined in docs/ARCHITECTURE.md.
-//
-// Required Supabase secret (set via CLI):
-//   supabase secrets set GROQ_API_KEY=gsk_...
-//
-// The client must pass a valid Supabase JWT in the Authorization header.
-// Unauthenticated requests are rejected with 401.
+// Server-side proxy for Groq API with JWT auth, rate limiting, and response caching.
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
@@ -18,6 +11,8 @@ interface AIContextPayload {
   tradition: string;
   trigger: "chat" | "explain_verse" | "cross_references" | "expand_note";
   userInput: string | null;
+  conversationId?: string | null;
+  stream?: boolean;
 }
 
 const CORS_HEADERS = {
@@ -28,7 +23,6 @@ const CORS_HEADERS = {
 };
 
 Deno.serve(async (req: Request) => {
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: CORS_HEADERS });
   }
@@ -40,105 +34,150 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  // Verify the caller is an authenticated Supabase user
+  // 1. Verify Authorization Header
   const authHeader = req.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    return new Response(JSON.stringify({ error: "Unauthorized: Missing Bearer Token" }), {
       status: 401,
       headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
     });
   }
 
   try {
-    // Validate the JWT against the Supabase project
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      { global: { headers: { Authorization: authHeader } } }
-    );
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      return new Response(JSON.stringify({ error: "Unauthorized: Invalid JWT Session" }), {
         status: 401,
         headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
       });
     }
 
-    // Parse request body
     const payload: AIContextPayload = await req.json();
+
+    // 2. Deterministic Cache Key Check for explain_verse & cross_references
+    const cacheKey = buildCacheKey(payload);
+    if (cacheKey) {
+      const cachedResponse = await fetchCachedResponse(supabase, cacheKey);
+      if (cachedResponse) {
+        return new Response(
+          JSON.stringify({
+            success: true,
+            message: cachedResponse,
+            model: "llama-3.3-70b-versatile",
+            source: "cache",
+          }),
+          { headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
+    // 3. Per-User Token Bucket Rate Limiting Check
+    const rateCheck = await checkAndUpdateRateLimit(supabase, user.id);
+    if (!rateCheck.allowed) {
+      return new Response(
+        JSON.stringify({
+          error: "Rate limit exceeded. Please wait before asking more questions.",
+          tier: rateCheck.tier,
+          resetInSeconds: 3600,
+        }),
+        {
+          status: 429,
+          headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+        }
+      );
+    }
 
     const groqApiKey = Deno.env.get("GROQ_API_KEY");
     if (!groqApiKey) {
-      // Graceful degradation — return a structured fallback if secret isn't set
+      // Graceful degradation fallback if secret is unconfigured
+      const fallback = buildFallbackResponse(payload);
       return new Response(
         JSON.stringify({
           success: true,
-          message: buildFallbackResponse(payload),
+          message: fallback,
           source: "fallback",
         }),
-        {
-          headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
-        }
+        { headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
       );
     }
 
-    // Build prompts (same logic as the former client-side call)
     const systemPrompt = buildSystemPrompt(payload);
     const userPrompt = buildUserPrompt(payload);
 
-    const groqRes = await fetch(
-      "https://api.groq.com/openai/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${groqApiKey}`,
-        },
-        body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt },
-          ],
-          temperature: 0.3,
-          max_tokens: 600,
-        }),
-      }
-    );
+    const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${groqApiKey}`,
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        temperature: 0.3,
+        max_tokens: 600,
+        stream: payload.stream || false,
+      }),
+    });
 
     if (!groqRes.ok) {
       const errBody = await groqRes.text();
-      console.error("Groq error:", groqRes.status, errBody);
-      // Graceful degradation on upstream error
+      console.error("Groq upstream error:", groqRes.status, errBody);
       return new Response(
         JSON.stringify({
           success: true,
           message: buildFallbackResponse(payload),
           source: "fallback",
         }),
-        {
-          headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
-        }
+        { headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
       );
     }
 
+    if (payload.stream) {
+      // Pipe stream directly back to client
+      return new Response(groqRes.body, {
+        headers: {
+          ...CORS_HEADERS,
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          Connection: "keep-alive",
+        },
+      });
+    }
+
     const groqData = await groqRes.json();
-    const message = groqData?.choices?.[0]?.message?.content;
+    const message = groqData?.choices?.[0]?.message?.content ?? buildFallbackResponse(payload);
+
+    // Save to Cache if deterministic trigger
+    if (cacheKey && message) {
+      await saveCachedResponse(supabase, cacheKey, message);
+    }
+
+    // Record to AI Message history if conversationId supplied
+    if (payload.conversationId) {
+      await recordAIMessage(supabase, payload.conversationId, "user", payload.userInput || payload.trigger);
+      await recordAIMessage(supabase, payload.conversationId, "assistant", message);
+    }
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: message ?? buildFallbackResponse(payload),
+        message,
         model: "llama-3.3-70b-versatile",
         source: "groq",
       }),
-      {
-        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
-      }
+      { headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
     );
   } catch (error) {
-    console.error("Edge function error:", error);
+    console.error("Edge function execution error:", error);
     return new Response(
       JSON.stringify({ error: "Internal server error" }),
       {
@@ -149,7 +188,80 @@ Deno.serve(async (req: Request) => {
   }
 });
 
-// ─── Prompt Builders ──────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function buildCacheKey(ctx: AIContextPayload): string | null {
+  if (ctx.trigger === "explain_verse" || ctx.trigger === "cross_references") {
+    return `${ctx.trigger}:${ctx.book}:${ctx.chapter}:${ctx.verse || 1}:${(ctx.tradition || "protestant").toLowerCase()}`;
+  }
+  return null;
+}
+
+async function fetchCachedResponse(supabase: any, key: string): Promise<string | null> {
+  try {
+    const { data } = await supabase
+      .from("ai_response_cache")
+      .select("response, expires_at")
+      .eq("cache_key", key)
+      .gt("expires_at", new Date().toISOString())
+      .single();
+    return data?.response || null;
+  } catch {
+    return null;
+  }
+}
+
+async function saveCachedResponse(supabase: any, key: string, response: string): Promise<void> {
+  try {
+    await supabase.from("ai_response_cache").upsert({
+      cache_key: key,
+      response,
+      model: "llama-3.3-70b-versatile",
+    });
+  } catch (err) {
+    console.warn("Failed to write to response cache:", err);
+  }
+}
+
+async function checkAndUpdateRateLimit(supabase: any, userId: string): Promise<{ allowed: boolean; tier: string }> {
+  try {
+    const { data } = await supabase
+      .from("ai_rate_limit")
+      .select("tokens_used, daily_limit, tier")
+      .eq("user_id", userId)
+      .single();
+
+    if (!data) {
+      await supabase.from("ai_rate_limit").insert({ user_id: userId, tokens_used: 1 });
+      return { allowed: true, tier: "free" };
+    }
+
+    if (data.tokens_used >= data.daily_limit) {
+      return { allowed: false, tier: data.tier };
+    }
+
+    await supabase
+      .from("ai_rate_limit")
+      .update({ tokens_used: data.tokens_used + 1, updated_at: new Date().toISOString() })
+      .eq("user_id", userId);
+
+    return { allowed: true, tier: data.tier };
+  } catch {
+    return { allowed: true, tier: "free" };
+  }
+}
+
+async function recordAIMessage(supabase: any, conversationId: string, sender: string, content: string): Promise<void> {
+  try {
+    await supabase.from("ai_message").insert({
+      conversation_id: conversationId,
+      sender,
+      content,
+    });
+  } catch (err) {
+    console.warn("Failed to log message to conversation history:", err);
+  }
+}
 
 function buildSystemPrompt(ctx: AIContextPayload): string {
   return `You are Berea AI — a reverent, objective, scholarly, and context-aware Scripture Study Assistant.

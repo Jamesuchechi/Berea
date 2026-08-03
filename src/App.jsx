@@ -39,6 +39,7 @@ export default function App() {
   const [readerBook, setReaderBook] = useState(null);
   const [readerChapter, setReaderChapter] = useState(null);
   const [readerOpenPicker, setReaderOpenPicker] = useState(false);
+  const [interlinearTarget, setInterlinearTarget] = useState({ book: 'john', chapter: 3, verse: 16 });
   const [theme, setTheme] = useState(() => localStorage.getItem('berea_theme') || 'light');
 
   useEffect(() => {
@@ -66,9 +67,13 @@ export default function App() {
         // Record activity for streak tracking
         recordReadingActivity();
 
-        if (event === 'SIGNED_IN') {
+        if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
           setHydrating(true);
           setRoute('app');
+          // Clean up URL hash after OAuth redirect
+          if (window.location.hash && window.location.hash.includes('access_token')) {
+            window.history.replaceState(null, '', window.location.pathname);
+          }
         }
       } else if (event === 'SIGNED_OUT') {
         setIsAuthenticated(false);
@@ -175,7 +180,13 @@ export default function App() {
       case 'search':
         return <SearchView />;
       case 'interlinear':
-        return <InterlinearView />;
+        return (
+          <InterlinearView
+            initialBook={interlinearTarget.book}
+            initialChapter={interlinearTarget.chapter}
+            initialVerse={interlinearTarget.verse}
+          />
+        );
       case 'memorize':
         return <MemorizationView />;
       case 'community':
@@ -196,6 +207,10 @@ export default function App() {
             }}
             triggerOpenPicker={readerOpenPicker}
             onPickerOpened={() => setReaderOpenPicker(false)}
+            onNavigateInterlinear={({ book, chapter, verse }) => {
+              setInterlinearTarget({ book: book || 'john', chapter: chapter || 3, verse: verse || 1 });
+              setActiveTab('interlinear');
+            }}
           />
         );
     }
