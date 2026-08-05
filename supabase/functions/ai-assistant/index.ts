@@ -18,13 +18,13 @@ interface AIContextPayload {
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "authorization, x-client-info, apikey, content-type, access-control-allow-origin, access-control-allow-headers",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: CORS_HEADERS });
+    return new Response("ok", { status: 200, headers: CORS_HEADERS });
   }
 
   if (req.method !== "POST") {

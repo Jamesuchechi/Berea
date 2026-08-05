@@ -45,9 +45,6 @@ export async function askAIContextualAssistant(contextPayload) {
     try {
       const { data, error } = await supabase.functions.invoke('ai-assistant', {
         body: contextPayload,
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
       });
 
       if (!error && data?.success) {

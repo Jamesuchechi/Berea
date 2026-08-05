@@ -4,6 +4,19 @@ import { supabase } from '../lib/supabase';
  * Service for reading plans and user progress persistence.
  */
 
+const DB_TIMEOUT_MS = 1000;
+
+function withTimeout(promise, ms = DB_TIMEOUT_MS) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('DB Timeout')), ms)),
+  ]);
+}
+
+function isUuid(str) {
+  return typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+}
+
 const DEFAULT_PLANS = [
   {
     id: 'plan_gospels_30',
@@ -36,11 +49,13 @@ const DEFAULT_PLANS = [
 
 export async function fetchReadingPlans() {
   try {
-    const { data, error } = await supabase
-      .from('reading_plan')
-      .select('*')
-      .eq('is_public', true)
-      .order('duration_days', { ascending: true });
+    const { data, error } = await withTimeout(
+      supabase
+        .from('reading_plan')
+        .select('*')
+        .eq('is_public', true)
+        .order('duration_days', { ascending: true })
+    );
 
     if (error || !data || data.length === 0) {
       return DEFAULT_PLANS;
@@ -61,16 +76,20 @@ export async function fetchReadingPlans() {
 }
 
 export async function getUserPlanProgress(planId) {
+  if (!isUuid(planId)) return getLocalPlanProgress(planId);
+
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) return getLocalPlanProgress(planId);
 
-    const { data, error } = await supabase
-      .from('user_plan_progress')
-      .select('*')
-      .eq('user_id', session.user.id)
-      .eq('plan_id', planId)
-      .single();
+    const { data, error } = await withTimeout(
+      supabase
+        .from('user_plan_progress')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .eq('plan_id', planId)
+        .maybeSingle()
+    );
 
     if (error || !data) return getLocalPlanProgress(planId);
 
@@ -103,6 +122,10 @@ export async function completePlanDay(planId, dayNumber) {
 
   saveLocalPlanProgress(planId, updatedLocal);
 
+  if (!isUuid(planId)) {
+    return { success: true, progress: updatedLocal, localOnly: true };
+  }
+
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) return { success: true, progress: updatedLocal, localOnly: true };
@@ -116,13 +139,15 @@ export async function completePlanDay(planId, dayNumber) {
       streak_count: updatedLocal.streakCount,
     };
 
-    const { data, error } = await supabase
-      .from('user_plan_progress')
-      .upsert(payload, { onConflict: 'user_id,plan_id' })
-      .select()
-      .single();
+    const { data, error } = await withTimeout(
+      supabase
+        .from('user_plan_progress')
+        .upsert(payload, { onConflict: 'user_id,plan_id' })
+        .select()
+        .maybeSingle()
+    );
 
-    if (error) return { success: false, error: error.message };
+    if (error || !data) return { success: true, progress: updatedLocal };
 
     return {
       success: true,
@@ -137,7 +162,7 @@ export async function completePlanDay(planId, dayNumber) {
       },
     };
   } catch (err) {
-    return { success: false, error: err.message };
+    return { success: true, progress: updatedLocal };
   }
 }
 

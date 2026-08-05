@@ -5,6 +5,15 @@ import { STRONGS_LEXICON, INTERLINEAR_CORPUS } from '../data/lexiconData';
  * Original Language Interlinear & Strong's Lexicon Service
  */
 
+const DB_TIMEOUT_MS = 1000;
+
+function withTimeout(promise, ms = DB_TIMEOUT_MS) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('DB Timeout')), ms)),
+  ]);
+}
+
 /**
  * Fetch word-by-word interlinear passage breakdown for any book, chapter, and verse
  */
@@ -16,19 +25,15 @@ export async function getInterlinearPassage(bookSlug = 'john', chapter = 3, vers
 
   // 1. Check database for dynamic interlinear word rows
   try {
-    const queryPromise = supabase
-      .from('interlinear_word')
-      .select('*, lexicon(*)')
-      .eq('book_slug', slug)
-      .eq('chapter', ch)
-      .eq('verse_number', v)
-      .order('word_order', { ascending: true });
-
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('DB Timeout')), 1000)
+    const { data: dbWords, error } = await withTimeout(
+      supabase
+        .from('interlinear_word')
+        .select('*, lexicon(*)')
+        .eq('book_slug', slug)
+        .eq('chapter', ch)
+        .eq('verse_number', v)
+        .order('word_order', { ascending: true })
     );
-
-    const { data: dbWords, error } = await Promise.race([queryPromise, timeoutPromise]);
 
     if (!error && dbWords && dbWords.length > 0) {
       const isHebrew = isHebrewBook(slug);
@@ -52,7 +57,7 @@ export async function getInterlinearPassage(bookSlug = 'john', chapter = 3, vers
       };
     }
   } catch (err) {
-    console.warn('[LanguageService] DB query error, using corpus fallback:', err);
+    // Silent fallback to local corpus
   }
 
   // 2. Return matching item from local corpus if available
@@ -71,13 +76,15 @@ export async function getLexiconEntry(strongsId) {
   if (!strongsId) return null;
   const cleanId = strongsId.trim().toUpperCase();
 
-  // Check database first
+  // Check database first with maybeSingle to prevent HTTP 406
   try {
-    const { data, error } = await supabase
-      .from('lexicon')
-      .select('*')
-      .eq('strongs_id', cleanId)
-      .single();
+    const { data, error } = await withTimeout(
+      supabase
+        .from('lexicon')
+        .select('*')
+        .eq('strongs_id', cleanId)
+        .maybeSingle()
+    );
 
     if (!error && data) return data;
   } catch {}
