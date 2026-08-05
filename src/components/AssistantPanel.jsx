@@ -221,6 +221,17 @@ export default function AssistantPanel({
             }}
           >
             {m.text}
+            {m.sender === 'assistant' && (
+              <div style={{ marginTop: '6px', textAlign: 'right' }}>
+                <button
+                  onClick={() => audioEngine.speakText(m.text)}
+                  title="Listen to AI answer"
+                  style={{ background: 'none', border: 'none', color: 'var(--gold)', cursor: 'pointer', fontSize: '11.5px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px' }}
+                >
+                  <i className="ti ti-volume" /> Listen
+                </button>
+              </div>
+            )}
           </div>
         ))}
 

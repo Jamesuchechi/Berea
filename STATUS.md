@@ -143,15 +143,37 @@
 
 ---
 
-## Phase 8 — Accessibility & Engagement 🔴 NOT STARTED
+## Phase 8 — Accessibility & Engagement 🟢 COMPLETE
 
-TTS for verse reader exists. Arbitrary content TTS, persisted accessibility settings across devices, and push notification delivery pending.
+**Session:** 2026-08-05
+
+**Completed:**
+- ✅ Extended TTS engine (`AudioEngine.js`, `useAudioTTS.js`) to support arbitrary text narration (AI responses, study notes, diagram bios, and verses) with rate control and event broadcasting.
+- ✅ Full multi-device accessibility settings persistence (`user_settings` table & `userSettingsService.js`) covering `fontSize`, `dyslexicFont` (OpenDyslexic typography), `theme`, and `ttsRate`.
+- ✅ WCAG AA contrast audit and adjustments across light parchment and dark forest CSS variables in `index.css` (minimum 4.5:1 ratio for text and faint elements).
+- ✅ Created SQL migration [`20260803000013_phase8_streaks_and_notifications.sql`](file:///home/jamesuchechi/Projects/Berea/supabase/migrations/20260803000013_phase8_streaks_and_notifications.sql) (`push_subscriptions` table and timezone-aware streak function).
+- ✅ Created [`streakService.js`](file:///home/jamesuchechi/Projects/Berea/src/services/streakService.js) for timezone-aware daily habit streaks and weekly activity heatmap.
+- ✅ Created [`pushNotificationService.js`](file:///home/jamesuchechi/Projects/Berea/src/services/pushNotificationService.js) for Service Worker Web Push daily verse notification delivery and permission management.
+- ✅ Updated [`AccessibilitySettingsView.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/settings/AccessibilitySettingsView.jsx) with font size controls, OpenDyslexic font toggle, TTS speed options, streak heatmap, and push notification controls.
+- ✅ Updated [`AssistantPanel.jsx`](file:///home/jamesuchechi/Projects/Berea/src/components/AssistantPanel.jsx) and [`DailyVerseCard.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/daily/DailyVerseCard.jsx) with TTS listen buttons and Web Push reminders.
+- ✅ Created unit test suite [`src/services/__tests__/phase8Services.test.js`](file:///home/jamesuchechi/Projects/Berea/src/services/__tests__/phase8Services.test.js) (74 total tests passing 100%).
+- ✅ `npm run build` succeeds cleanly (126 modules transformed).
 
 ---
 
-## Phase 9 — Community: Build Moderation Layer Before Posting UI 🔴 NOT STARTED
+## Phase 9 — Community: Build Moderation Layer Before Posting UI 🟢 COMPLETE
 
-Prayer wall persistence and flagging landed in Phase 1. Admin review queue and posting rate limits pending.
+**Session:** 2026-08-05
+
+**Completed:**
+- ✅ Created SQL migration [`20260803000014_phase9_community_moderation.sql`](file:///home/jamesuchechi/Projects/Berea/supabase/migrations/20260803000014_phase9_community_moderation.sql) (`user_block` table, `is_hidden` column, and Postgres RPC `check_user_posting_rate_limit`).
+- ✅ Created official Berea Community Guidelines document [`docs/COMMUNITY_GUIDELINES.md`](file:///home/jamesuchechi/Projects/Berea/docs/COMMUNITY_GUIDELINES.md) detailing reverence standards, anonymity rules, rate limits, and reporting procedures.
+- ✅ Implemented [`moderationService.js`](file:///home/jamesuchechi/Projects/Berea/src/services/moderationService.js) managing sliding-window posting rate limits (max 3/hr), user block/mute actions, and Admin flag review operations.
+- ✅ Created [`AdminModerationQueue.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/community/AdminModerationQueue.jsx) rendering reported posts with review actions (Dismiss, Archive/Hide Content, Block Author).
+- ✅ Created [`CommunityGuidelinesModal.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/community/CommunityGuidelinesModal.jsx) modal for viewing official community standards.
+- ✅ Updated [`CommunityHubView.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/community/CommunityHubView.jsx) to include Admin Moderation Queue tab, rate-limiting error feedback, guidelines modal trigger, and author block options.
+- ✅ Created unit test suite [`src/services/__tests__/moderationService.test.js`](file:///home/jamesuchechi/Projects/Berea/src/services/__tests__/moderationService.test.js) (80 total unit tests passing 100%).
+- ✅ `npm run build` succeeds cleanly (129 modules transformed).
 
 ---
 

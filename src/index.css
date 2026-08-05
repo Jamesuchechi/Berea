@@ -2,13 +2,13 @@
   --parchment: #FBF6EC;
   --parchment-deep: #F1E8D3;
   --ink: #2B2420;
-  --ink-soft: #6B6155;
-  --ink-faint: #9A8F7C;
-  --moss: #3F5A46;
-  --moss-dark: #243A2B;
-  --gold: #B8863B;
+  --ink-soft: #4F463B;
+  --ink-faint: #5C5243;
+  --moss: #2E4B35;
+  --moss-dark: #1E3324;
+  --gold: #8C5E1A;
   --line: #E4D8BE;
-  --line-strong: #D6C7A3;
+  --line-strong: #C4B594;
   --bg-card: #FFFFFF;
   --font-display: 'Fraunces', Georgia, serif;
   --font-ui: 'Inter', -apple-system, sans-serif;
@@ -20,12 +20,12 @@
   --parchment-deep: #1A2B1E;
   --ink: #F5F0E6;
   --ink-soft: #BCCFC0;
-  --ink-faint: #889F8D;
+  --ink-faint: #99B29E;
   --moss: #3E694B;
   --moss-dark: #0B140E;
-  --gold: #E8B868;
+  --gold: #F2C479;
   --line: #283E2F;
-  --line-strong: #3D5C46;
+  --line-strong: #4D7058;
   --bg-card: #182A1E;
 }
 
@@ -43,6 +43,13 @@ body {
   color: var(--ink);
   font-family: var(--font-ui);
   -webkit-font-smoothing: antialiased;
+}
+
+body.dyslexia-font {
+  font-family: 'OpenDyslexic', 'Comic Sans MS', sans-serif !important;
+  letter-spacing: 0.04em;
+  word-spacing: 0.1em;
+  line-height: 1.85;
 }
 
 h1, h2, h3 {

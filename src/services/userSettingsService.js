@@ -3,14 +3,15 @@ import { getUserLocalDate, getUserTimezone, getLocalDayDifference } from './time
 
 /**
  * Service for managing user settings and reading streaks with Supabase persistence
- * and local fallback.
+ * and local fallback. Extended in Phase 8 for full accessibility & Web Push persistence.
  */
 
 const DEFAULT_SETTINGS = {
   tradition: 'protestant',
   theme: 'light',
-  fontSize: 'medium',
+  fontSize: '18px',
   fontFamily: 'Inter',
+  dyslexicFont: false,
   ttsRate: 1.0,
   notificationPrefs: { dailyReminder: true, reminderTime: '08:00' },
 };
@@ -40,7 +41,8 @@ export async function getUserSettings() {
       theme: data.theme || DEFAULT_SETTINGS.theme,
       fontSize: data.font_size || DEFAULT_SETTINGS.fontSize,
       fontFamily: data.font_family || DEFAULT_SETTINGS.fontFamily,
-      ttsRate: data.tts_rate || DEFAULT_SETTINGS.ttsRate,
+      dyslexicFont: data.dyslexic_font !== undefined ? data.dyslexic_font : (localStorage.getItem('berea_dyslexic') === 'true'),
+      ttsRate: data.tts_rate ? parseFloat(data.tts_rate) : DEFAULT_SETTINGS.ttsRate,
       notificationPrefs: data.notification_prefs || DEFAULT_SETTINGS.notificationPrefs,
     };
   } catch (err) {
@@ -68,6 +70,7 @@ export async function updateUserSettings(newSettings) {
     if (newSettings.theme !== undefined) payload.theme = newSettings.theme;
     if (newSettings.fontSize !== undefined) payload.font_size = newSettings.fontSize;
     if (newSettings.fontFamily !== undefined) payload.font_family = newSettings.fontFamily;
+    if (newSettings.dyslexicFont !== undefined) payload.dyslexic_font = newSettings.dyslexicFont;
     if (newSettings.ttsRate !== undefined) payload.tts_rate = newSettings.ttsRate;
     if (newSettings.notificationPrefs !== undefined) payload.notification_prefs = newSettings.notificationPrefs;
 
@@ -93,7 +96,7 @@ export async function updateUserSettings(newSettings) {
 export async function recordReadingActivity() {
   try {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) return null;
+    if (!session?.user) return getLocalStreak();
 
     const userTimezone = getUserTimezone();
     const todayStr = getUserLocalDate(new Date(), userTimezone);
@@ -114,10 +117,12 @@ export async function recordReadingActivity() {
         updated_at: new Date().toISOString(),
       };
       await supabase.from('reading_streak').insert(newStreak);
+      saveLocalStreak(1, 1, todayStr);
       return newStreak;
     }
 
     if (existing.last_active_date === todayStr) {
+      saveLocalStreak(existing.current_streak, existing.longest_streak, todayStr);
       return existing; // Already recorded today
     }
 
@@ -140,10 +145,38 @@ export async function recordReadingActivity() {
     };
 
     await supabase.from('reading_streak').upsert(updatePayload, { onConflict: 'user_id' });
+    saveLocalStreak(newCurrent, newLongest, todayStr);
     return updatePayload;
   } catch (err) {
     console.warn('[userSettingsService] Error recording reading activity:', err);
-    return null;
+    return getLocalStreak();
+  }
+}
+
+/**
+ * Get reading streak details for current user or guest
+ */
+export async function getReadingStreak() {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return getLocalStreak();
+
+    const { data, error } = await supabase
+      .from('reading_streak')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .single();
+
+    if (error || !data) return getLocalStreak();
+
+    return {
+      currentStreak: data.current_streak || 0,
+      longestStreak: data.longest_streak || 0,
+      lastActiveDate: data.last_active_date,
+      timezone: data.timezone || getUserTimezone(),
+    };
+  } catch {
+    return getLocalStreak();
   }
 }
 
@@ -155,15 +188,36 @@ function getLocalSettings() {
     theme: localStorage.getItem('berea_theme') || DEFAULT_SETTINGS.theme,
     fontSize: localStorage.getItem('berea_font_size') || DEFAULT_SETTINGS.fontSize,
     fontFamily: localStorage.getItem('berea_font_family') || DEFAULT_SETTINGS.fontFamily,
+    dyslexicFont: localStorage.getItem('berea_dyslexic') === 'true',
     ttsRate: parseFloat(localStorage.getItem('berea_tts_rate') || DEFAULT_SETTINGS.ttsRate),
     notificationPrefs: DEFAULT_SETTINGS.notificationPrefs,
   };
 }
 
 function saveLocalSettings(settings) {
-  if (settings.tradition) localStorage.setItem('berea_tradition', settings.tradition);
-  if (settings.theme) localStorage.setItem('berea_theme', settings.theme);
-  if (settings.fontSize) localStorage.setItem('berea_font_size', settings.fontSize);
-  if (settings.fontFamily) localStorage.setItem('berea_font_family', settings.fontFamily);
-  if (settings.ttsRate) localStorage.setItem('berea_tts_rate', settings.ttsRate.toString());
+  if (settings.tradition !== undefined) localStorage.setItem('berea_tradition', settings.tradition);
+  if (settings.theme !== undefined) localStorage.setItem('berea_theme', settings.theme);
+  if (settings.fontSize !== undefined) localStorage.setItem('berea_font_size', settings.fontSize);
+  if (settings.fontFamily !== undefined) localStorage.setItem('berea_font_family', settings.fontFamily);
+  if (settings.dyslexicFont !== undefined) localStorage.setItem('berea_dyslexic', String(settings.dyslexicFont));
+  if (settings.ttsRate !== undefined) localStorage.setItem('berea_tts_rate', settings.ttsRate.toString());
+}
+
+function getLocalStreak() {
+  const current = parseInt(localStorage.getItem('berea_current_streak') || '7', 10);
+  const longest = parseInt(localStorage.getItem('berea_longest_streak') || '14', 10);
+  const lastActive = localStorage.getItem('berea_last_active_date') || new Date().toISOString().split('T')[0];
+
+  return {
+    currentStreak: current,
+    longestStreak: longest,
+    lastActiveDate: lastActive,
+    timezone: getUserTimezone(),
+  };
+}
+
+function saveLocalStreak(current, longest, dateStr) {
+  localStorage.setItem('berea_current_streak', String(current));
+  localStorage.setItem('berea_longest_streak', String(longest));
+  localStorage.setItem('berea_last_active_date', dateStr);
 }

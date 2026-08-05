@@ -1,15 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { fetchPrayers, createPrayer, tapPrayedFor, submitCommunityFlag } from '../../services/communityService';
+import { blockUser } from '../../services/moderationService';
+import CommunityGuidelinesModal from './CommunityGuidelinesModal';
+import AdminModerationQueue from './AdminModerationQueue';
 
 export default function CommunityHubView() {
-  const [activeTab, setActiveTab] = useState('prayers');
+  const [activeTab, setActiveTab] = useState('prayers'); // 'prayers' | 'admin'
   const [prayers, setPrayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [rateLimitError, setRateLimitError] = useState(null);
   const [newPrayerText, setNewPrayerText] = useState('');
   const [newPrayerCategory, setNewPrayerCategory] = useState('Intercession');
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [posting, setPosting] = useState(false);
+  const [showGuidelines, setShowGuidelines] = useState(false);
 
   const loadPrayers = async () => {
     setLoading(true);
@@ -48,6 +53,8 @@ export default function CommunityHubView() {
     if (!newPrayerText.trim()) return;
 
     setPosting(true);
+    setRateLimitError(null);
+
     const result = await createPrayer({
       title: newPrayerCategory,
       content: newPrayerText,
@@ -55,10 +62,13 @@ export default function CommunityHubView() {
       isAnonymous,
     });
 
-    if (result.item) {
+    if (result.success && result.item) {
       setPrayers(prev => [result.item, ...prev]);
       setNewPrayerText('');
+    } else if (result.error) {
+      setRateLimitError(result.error);
     }
+
     setPosting(false);
   };
 
@@ -79,6 +89,15 @@ export default function CommunityHubView() {
     }
   };
 
+  const handleBlockAuthor = async (userId) => {
+    if (!userId) return;
+    if (confirm('Block this author? All posts from this author will be hidden from your feed.')) {
+      await blockUser(userId, 'User muted by member');
+      setPrayers(prev => prev.filter(p => p.userId !== userId));
+      alert('Author has been blocked.');
+    }
+  };
+
   return (
     <main className="reader" style={{ background: 'var(--parchment)', color: 'var(--ink)' }}>
       <div className="reader-inner" style={{ maxWidth: '840px', margin: '0 auto' }}>
@@ -86,17 +105,26 @@ export default function CommunityHubView() {
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
           <div className="eyebrow" style={{ color: 'var(--gold)', marginBottom: '6px' }}>
-            Reverent Fellowship & Prayer
+            Reverent Fellowship & Moderation Layer
           </div>
           <h2 style={{ fontSize: '28px', color: 'var(--ink)', fontWeight: 600 }}>
             Community & Prayer Wall
           </h2>
           <p style={{ fontSize: '14.5px', color: 'var(--ink-soft)', marginTop: '4px' }}>
-            Pray for one another, join group reading circles, and share reverent study discussions.
+            Pray for one another, share study insights, and maintain a reverent space.
           </p>
 
+          <div style={{ marginTop: '8px' }}>
+            <button
+              onClick={() => setShowGuidelines(true)}
+              style={{ background: 'none', border: 'none', color: 'var(--gold)', fontSize: '13px', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}
+            >
+              📜 View Berea Community Guidelines
+            </button>
+          </div>
+
           {/* Tab Switcher */}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '16px' }}>
             <button
               onClick={() => setActiveTab('prayers')}
               style={{
@@ -112,16 +140,50 @@ export default function CommunityHubView() {
             >
               🙏 Community Prayer Wall
             </button>
+
+            <button
+              onClick={() => setActiveTab('admin')}
+              style={{
+                padding: '8px 18px',
+                borderRadius: '999px',
+                fontSize: '13px',
+                fontWeight: 600,
+                border: '1px solid var(--line-strong)',
+                background: activeTab === 'admin' ? 'var(--moss)' : 'var(--bg-card)',
+                color: activeTab === 'admin' ? '#fff' : 'var(--ink)',
+                cursor: 'pointer'
+              }}
+            >
+              🛡️ Moderation Queue
+            </button>
           </div>
         </div>
 
+        {/* Community Guidelines Modal */}
+        <CommunityGuidelinesModal
+          isOpen={showGuidelines}
+          onClose={() => setShowGuidelines(false)}
+        />
+
+        {/* Tab 2: Admin Moderation Queue */}
+        {activeTab === 'admin' && (
+          <AdminModerationQueue />
+        )}
+
         {/* Error Alert Banner */}
-        {error && (
+        {error && activeTab === 'prayers' && (
           <div style={{ background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#ef4444', padding: '12px 16px', borderRadius: '8px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>⚠️ {error}</span>
             <button onClick={loadPrayers} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '4px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}>
               Retry
             </button>
+          </div>
+        )}
+
+        {/* Rate Limit Warning Banner */}
+        {rateLimitError && activeTab === 'prayers' && (
+          <div style={{ background: 'rgba(245, 158, 11, 0.15)', border: '1px solid rgba(245, 158, 11, 0.3)', color: '#f59e0b', padding: '12px 16px', borderRadius: '8px', marginBottom: '20px', fontSize: '13.5px', fontWeight: 500 }}>
+            ⏳ {rateLimitError}
           </div>
         )}
 
@@ -164,7 +226,10 @@ export default function CommunityHubView() {
                 style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--line-strong)', background: 'var(--bg-card)', color: 'var(--ink)', fontSize: '13.5px', outline: 'none', resize: 'vertical' }}
               ></textarea>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
+                <span style={{ fontSize: '11.5px', color: 'var(--ink-soft)' }}>
+                  🛡️ Posts are moderated &amp; rate-limited (max 3/hr).
+                </span>
                 <button type="submit" disabled={posting} className="btn btn-primary" style={{ padding: '8px 20px', fontSize: '13.5px' }}>
                   {posting ? 'Posting...' : 'Post to Prayer Wall'}
                 </button>
@@ -233,13 +298,24 @@ export default function CommunityHubView() {
                         🙏 {p.hasPrayed ? 'Prayed for This' : 'I Prayed for This'} ({p.prayedCount || 0})
                       </button>
 
-                      <button
-                        onClick={() => handleReportContent(p.id)}
-                        title="Report inappropriate content"
-                        style={{ background: 'none', border: 'none', color: 'var(--ink-faint)', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}
-                      >
-                        <i className="ti ti-flag" /> Report
-                      </button>
+                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                        {!p.isAnonymous && p.userId && (
+                          <button
+                            onClick={() => handleBlockAuthor(p.userId)}
+                            title="Hide posts from this author"
+                            style={{ background: 'none', border: 'none', color: 'var(--ink-faint)', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                          >
+                            <i className="ti ti-ban" /> Block
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleReportContent(p.id)}
+                          title="Report inappropriate content"
+                          style={{ background: 'none', border: 'none', color: 'var(--ink-faint)', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                        >
+                          <i className="ti ti-flag" /> Report
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}

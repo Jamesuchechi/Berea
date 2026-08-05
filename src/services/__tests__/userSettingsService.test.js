@@ -27,8 +27,9 @@ describe('userSettingsService', () => {
     expect(settings).toEqual({
       tradition: 'protestant',
       theme: 'light',
-      fontSize: 'medium',
+      fontSize: '18px',
       fontFamily: 'Inter',
+      dyslexicFont: false,
       ttsRate: 1.0,
       notificationPrefs: { dailyReminder: true, reminderTime: '08:00' },
     });

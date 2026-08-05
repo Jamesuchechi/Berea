@@ -1,11 +1,15 @@
 import { supabase } from '../lib/supabase';
 import { enqueueAction, registerSyncProcessor } from './offlineQueue';
+import { checkPostingRateLimit, recordPostTimestamp, getBlockedUserIds } from './moderationService';
 
 /**
  * Service for community prayer wall, comments, prayed-for taps, and moderation flags.
+ * Updated in Phase 9 with rate limiting and user block filtering.
  */
 
 export async function fetchPrayers() {
+  const blockedUserIds = await getBlockedUserIds();
+
   try {
     const { data, error } = await supabase
       .from('prayer_request')
@@ -20,11 +24,12 @@ export async function fetchPrayers() {
         created_at,
         prayer_prayed_for(count)
       `)
+      .eq('is_hidden', false)
       .order('created_at', { ascending: false });
 
-    if (error || !data) return getLocalPrayers();
+    if (error || !data) return filterBlocked(getLocalPrayers(), blockedUserIds);
 
-    return data.map(p => ({
+    const items = data.map(p => ({
       id: p.id,
       userId: p.user_id,
       isAnonymous: p.is_anonymous,
@@ -35,12 +40,22 @@ export async function fetchPrayers() {
       createdAt: p.created_at,
       prayedCount: p.prayer_prayed_for?.[0]?.count || 0,
     }));
+
+    return filterBlocked(items, blockedUserIds);
   } catch {
-    return getLocalPrayers();
+    return filterBlocked(getLocalPrayers(), blockedUserIds);
   }
 }
 
 export async function createPrayer({ title, content, category = 'general', isAnonymous = false }) {
+  // Check rate limit (max 3 posts / hr)
+  const rateLimit = await checkPostingRateLimit();
+  if (!rateLimit.allowed) {
+    return { success: false, error: rateLimit.reason };
+  }
+
+  recordPostTimestamp();
+
   const localPayload = {
     id: `prayer_${Date.now()}`,
     title,
@@ -139,17 +154,12 @@ export async function submitCommunityFlag({ contentType, contentId, reason }) {
   }
 }
 
-// ── Offline Sync Processor ───────────────────────────────────────────────────
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
-registerSyncProcessor(async (action) => {
-  if (action.type === 'CREATE_PRAYER') {
-    const result = await createPrayer(action.payload);
-    return result.success;
-  }
-  return true;
-});
-
-// ── Local Storage Helpers ─────────────────────────────────────────────────────
+function filterBlocked(prayers, blockedIds) {
+  if (!blockedIds || blockedIds.length === 0) return prayers;
+  return prayers.filter(p => !p.userId || !blockedIds.includes(p.userId));
+}
 
 function getLocalPrayers() {
   try {

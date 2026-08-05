@@ -151,23 +151,21 @@ Currently: data-driven interlinear reader for any book/chapter/verse in Greek (L
 
 ## Phase 8 — Accessibility & Engagement: Deepen Past the Demo
 
-- [ ] TTS for arbitrary text (currently scoped to verse reading only) — extend `AudioEngine` to any readable content (notes, AI responses, diagram descriptions)
-- [ ] Persist all accessibility settings (font size, dyslexia font, theme, TTS rate) to `user_settings` (Phase 1) so they survive across devices, not just the current browser's localStorage
-- [ ] Actual WCAG contrast audit on both light and dark themes — don't assume "dark mode exists" means "dark mode is accessible"
-- [ ] Reading streaks backed by `reading_streak` table with timezone-aware day boundaries (Phase 1.4) — currently there's no streak persistence at all
-- [ ] Real push notification delivery for "daily verse" (currently just a UI card with no actual notification pipeline behind it)
+- [x] TTS for arbitrary text (currently scoped to verse reading only) — extend `AudioEngine` (`AudioEngine.js`, `useAudioTTS.js`) to any readable content (notes, AI responses, diagram descriptions)
+- [x] Persist all accessibility settings (font size, dyslexia font, theme, TTS rate) to `user_settings` (Phase 1) so they survive across devices, not just the current browser's localStorage
+- [x] Actual WCAG contrast audit on both light and dark themes (`index.css` adjusted for 4.5:1 minimum ratio on all text and faint elements)
+- [x] Reading streaks backed by `reading_streak` table with timezone-aware day boundaries (`streakService.js`, `20260803000013_phase8_streaks_and_notifications.sql`)
+- [x] Real push notification delivery for "daily verse" (`pushNotificationService.js`, Service Worker Web Push API, `push_subscriptions` DB table)
 
 ---
 
 ## Phase 9 — Community: Build the Moderation Layer *Before* the Posting UI
 
-Your original docs correctly flagged "evaluate scope/moderation cost before starting" for this phase — then the UI got built anyway with no moderation and no persistence. Reverse that order this time.
-
-- [ ] `community_flag` table and an actual admin review queue (even a simple internal-only page) before allowing public posting
-- [ ] Rate limiting on post/comment creation (prevent spam floods)
-- [ ] Decide and document: anonymous posting allowed or not, real-name policy, block/mute capability
-- [ ] Consider a soft launch: read-only public prayer wall (seeded/curated) before enabling open posting, to validate demand before paying the moderation cost
-- [ ] Community guidelines doc, written and linked, before the posting UI goes live — not after the first problem post
+- [x] `community_flag` table and an actual admin review queue ([`AdminModerationQueue.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/community/AdminModerationQueue.jsx), [`moderationService.js`](file:///home/jamesuchechi/Projects/Berea/src/services/moderationService.js), [`20260803000014_phase9_community_moderation.sql`](file:///home/jamesuchechi/Projects/Berea/supabase/migrations/20260803000014_phase9_community_moderation.sql))
+- [x] Rate limiting on post/comment creation (max 3 posts per hour sliding window in `moderationService.js` and `check_user_posting_rate_limit` Postgres RPC)
+- [x] Decide and document: anonymous posting allowed, real-name display, user block/mute capability (`user_block` table, `blockUser` method)
+- [x] Soft launch & moderation queue review mode integrated into [`CommunityHubView.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/community/CommunityHubView.jsx)
+- [x] Official Berea Community guidelines doc ([`docs/COMMUNITY_GUIDELINES.md`](file:///home/jamesuchechi/Projects/Berea/docs/COMMUNITY_GUIDELINES.md)) and linked [`CommunityGuidelinesModal.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/community/CommunityGuidelinesModal.jsx)
 
 ---
 
