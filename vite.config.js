@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'icon-192.png', 'icon-512.png', 'berea_logo.jpg'],
+      includeAssets: ['favicon.ico', 'icon-192.png', 'icon-512.jpg', 'berea_logo.jpg'],
       injectManifest: false,
       manifest: {
         name: 'Berea — Christian Study App',
@@ -25,9 +25,9 @@ export default defineConfig({
             purpose: 'any maskable'
           },
           {
-            src: '/icon-512.png',
+            src: '/icon-512.jpg',
             sizes: '512x512',
-            type: 'image/png',
+            type: 'image/jpeg',
             purpose: 'any maskable'
           }
         ]

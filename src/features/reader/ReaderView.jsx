@@ -396,7 +396,7 @@ export default function ReaderView({
                       {v.text}{' '}
                       {v.xref && (
                         <span
-                          title={`Cross reference: ${v.xref}`}
+                          title={`Cross reference: ${typeof v.xref === 'string' ? v.xref : JSON.stringify(v.xref)}`}
                           style={{
                             fontSize: '10px', color: '#10b981', fontWeight: 600,
                             background: 'var(--parchment-deep)', padding: '1px 5px',
@@ -404,7 +404,7 @@ export default function ReaderView({
                             marginLeft: '2px'
                           }}
                         >
-                          [{v.xref}]
+                          [{typeof v.xref === 'string' ? v.xref : String(v.xref)}]
                         </span>
                       )}
                     </span>

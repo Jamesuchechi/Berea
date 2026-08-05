@@ -11,11 +11,14 @@ export default function AssistantPanel({
   currentChapter = 3,
   currentVerse = 16
 }) {
+  const safeTradition = (typeof tradition === 'string' ? tradition : 'protestant').toLowerCase();
+  const traditionLabel = safeTradition.charAt(0).toUpperCase() + safeTradition.slice(1);
+
   const [conversationId, setConversationId] = useState(null);
   const [messages, setMessages] = useState([
     {
       sender: 'assistant',
-      text: `Grace and peace! I am Berea AI. I am examining ${currentBook} ${currentChapter}:${currentVerse} through your active ${tradition.charAt(0).toUpperCase() + tradition.slice(1)} tradition lens. How can I assist your study today?`
+      text: `Grace and peace! I am Berea AI. I am examining ${currentBook} ${currentChapter}:${currentVerse} through your active ${traditionLabel} tradition lens. How can I assist your study today?`
     }
   ]);
   const [inputVal, setInputVal] = useState('');
@@ -168,7 +171,7 @@ export default function AssistantPanel({
 
         {/* Guardrails line — Groq model name is intentionally omitted */}
         <div style={{ fontSize: '11px', color: 'var(--ink-soft)' }}>
-          🛡️ {tradition.charAt(0).toUpperCase() + tradition.slice(1)} tradition lens active
+          🛡️ {traditionLabel} tradition lens active
         </div>
       </div>
 

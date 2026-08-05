@@ -54,7 +54,7 @@ export default function Sidebar({
               Active Tradition
             </div>
             <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)', marginTop: '2px' }}>
-              📜 {tradition.charAt(0).toUpperCase() + tradition.slice(1)} Canon
+              📜 {typeof tradition === 'string' && tradition ? (tradition.charAt(0).toUpperCase() + tradition.slice(1)) : 'Protestant'} Canon
             </div>
           </div>
         </div>

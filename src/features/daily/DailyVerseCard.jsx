@@ -46,7 +46,7 @@ export default function DailyVerseCard() {
         </span>
       </div>
 
-      <p style={{ fontFamily: 'var(--font-display)', fontSize: '19px', lineHeight: 1.7, color: 'var(--ink)', marginBottom: '16px', italic: 'true' }}>
+      <p style={{ fontFamily: 'var(--font-display)', fontSize: '19px', lineHeight: 1.7, color: 'var(--ink)', marginBottom: '16px', fontStyle: 'italic' }}>
         "{dailyVerse.text}"
       </p>
 

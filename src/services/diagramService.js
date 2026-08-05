@@ -8,6 +8,15 @@ import { GENEALOGY_DATA, TIMELINE_DATA, MAP_LOCATIONS_DATA, CROSS_REF_NETWORK_DA
  * and cross-reference network graphs from database rows or local datasets.
  */
 
+const DB_TIMEOUT_MS = 1000;
+
+function withTimeout(promise, ms = DB_TIMEOUT_MS) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('DB Timeout')), ms)),
+  ]);
+}
+
 export async function fetchDiagramDefinitions(typeFilter = 'All') {
   try {
     let query = supabase.from('diagram_definition').select('*').eq('is_public', true);
@@ -24,7 +33,7 @@ export async function fetchDiagramDefinitions(typeFilter = 'All') {
       }
     }
 
-    const { data, error } = await query;
+    const { data, error } = await withTimeout(query);
     if (error || !data || data.length === 0) {
       return getLocalDiagramDefinitions(typeFilter);
     }
@@ -44,11 +53,13 @@ export async function fetchDiagramDefinitions(typeFilter = 'All') {
 
 export async function getDiagramBySlug(slug) {
   try {
-    const { data, error } = await supabase
-      .from('diagram_definition')
-      .select('*')
-      .eq('slug', slug)
-      .single();
+    const { data, error } = await withTimeout(
+      supabase
+        .from('diagram_definition')
+        .select('*')
+        .eq('slug', slug)
+        .single()
+    );
 
     if (!error && data) return data;
   } catch {}
