@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getMemorizationItems, logReview } from '../../services/memorizationService';
+import { calculateSM2NextReview } from '../../services/sm2Algorithm';
 
 export default function MemorizationView() {
   const [items, setItems] = useState([]);
@@ -27,9 +28,16 @@ export default function MemorizationView() {
     return words.map((w, idx) => (idx % 3 === 1 ? '______' : w)).join(' ');
   };
 
-  const handleNext = async (easeRating) => {
+  const handleRateSM2 = async (qualityScore) => {
     if (current) {
-      await logReview(current.id, easeRating);
+      const sm2Result = calculateSM2NextReview({
+        quality: qualityScore,
+        repetitions: current.repetitions || 0,
+        intervalDays: current.interval_days || 1,
+        easeFactor: current.ease_factor || 2.5,
+      });
+
+      await logReview(current.id, qualityScore, sm2Result);
     }
     setCompletedCount(prev => prev + 1);
     setRevealed(false);
@@ -42,19 +50,24 @@ export default function MemorizationView() {
         
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
           <div className="eyebrow" style={{ color: 'var(--gold)', marginBottom: '6px' }}>
-            Scripture Memorization System
+            SuperMemo SM-2 Spaced Repetition
           </div>
           <h2 style={{ fontSize: '28px', color: 'var(--ink)', fontWeight: 600 }}>
-            Spaced Repetition Scripture Memory
+            Scripture Memory System
           </h2>
           <p style={{ fontSize: '14.5px', color: 'var(--ink-soft)', marginTop: '4px' }}>
-            Hide the text, test your recall, and lock Scripture in your heart using the SM-2 algorithm.
+            Hide text, test your recall, and lock Scripture in your heart using the scientific SM-2 algorithm.
           </p>
 
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginTop: '16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginTop: '16px', flexWrap: 'wrap' }}>
             <span style={{ fontSize: '12.5px', background: 'var(--parchment-deep)', border: '1px solid var(--line-strong)', padding: '4px 12px', borderRadius: '999px', color: 'var(--gold)', fontWeight: 600 }}>
-              🧠 Memory Cards Reviewed: {completedCount}
+              🧠 Cards Reviewed: {completedCount}
             </span>
+            {current && (
+              <span style={{ fontSize: '12.5px', background: 'var(--moss)', color: '#fff', padding: '4px 12px', borderRadius: '999px', fontWeight: 600 }}>
+                ⚡ Ease Factor: {(current.ease_factor || 2.5).toFixed(2)}
+              </span>
+            )}
             <button
               onClick={() => setClozeMode(!clozeMode)}
               style={{
@@ -105,11 +118,11 @@ export default function MemorizationView() {
             }}
           >
             <div style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--gold)', fontWeight: 700, marginBottom: '8px' }}>
-              Spaced Repetition Active
+              SuperMemo SM-2 Spaced Repetition
             </div>
 
             <h3 style={{ fontSize: '24px', fontFamily: 'var(--font-display)', color: 'var(--ink)', fontWeight: 600, marginBottom: '20px' }}>
-              📖 {current.bookSlug.toUpperCase()} {current.chapter}:{current.verseStart}
+              📖 {(current.bookSlug || current.bookTitle || 'VERSE').toUpperCase()} {current.chapter}:{current.verseStart || current.verse_number}
             </h3>
 
             <div
@@ -130,9 +143,9 @@ export default function MemorizationView() {
               }}
             >
               {!revealed ? (
-                clozeMode ? getClozeText(current.textSnapshot) : '🙈 [Tap "Reveal Text" below to test your recall]'
+                clozeMode ? getClozeText(current.textSnapshot || current.text) : '🙈 [Tap "Reveal Scripture Text" below to test your recall]'
               ) : (
-                current.textSnapshot
+                current.textSnapshot || current.text
               )}
             </div>
 
@@ -146,22 +159,34 @@ export default function MemorizationView() {
               </button>
             ) : (
               <div>
-                <div style={{ fontSize: '12.5px', color: 'var(--ink-soft)', marginBottom: '10px', fontWeight: 600 }}>
-                  Rate how accurately you recalled this verse (SM-2):
+                <div style={{ fontSize: '12.5px', color: 'var(--ink-soft)', marginBottom: '12px', fontWeight: 600 }}>
+                  Rate your recall accuracy — SM-2 will schedule your next review:
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
-                  <button onClick={() => handleNext(1)} style={{ padding: '10px', borderRadius: '8px', border: '1px solid #FF5F56', background: 'rgba(255,95,86,0.1)', color: '#FF5F56', fontWeight: 700, cursor: 'pointer' }}>
-                    🔴 Again (1)
+                  <button
+                    onClick={() => handleRateSM2(1)}
+                    style={{ padding: '10px 6px', borderRadius: '8px', border: '1px solid #FF5F56', background: 'rgba(255,95,86,0.1)', color: '#FF5F56', fontWeight: 700, cursor: 'pointer', fontSize: '12.5px' }}
+                  >
+                    🔴 Again (1d)
                   </button>
-                  <button onClick={() => handleNext(2)} style={{ padding: '10px', borderRadius: '8px', border: '1px solid #FFBD2E', background: 'rgba(255,189,46,0.1)', color: '#D98200', fontWeight: 700, cursor: 'pointer' }}>
-                    🟠 Hard (2)
+                  <button
+                    onClick={() => handleRateSM2(2)}
+                    style={{ padding: '10px 6px', borderRadius: '8px', border: '1px solid #FFBD2E', background: 'rgba(255,189,46,0.1)', color: '#D98200', fontWeight: 700, cursor: 'pointer', fontSize: '12.5px' }}
+                  >
+                    🟠 Hard (3d)
                   </button>
-                  <button onClick={() => handleNext(3)} style={{ padding: '10px', borderRadius: '8px', border: '1px solid var(--moss)', background: 'var(--parchment-deep)', color: 'var(--moss-dark)', fontWeight: 700, cursor: 'pointer' }}>
-                    🟢 Good (3)
+                  <button
+                    onClick={() => handleRateSM2(3)}
+                    style={{ padding: '10px 6px', borderRadius: '8px', border: '1px solid var(--moss)', background: 'var(--parchment-deep)', color: 'var(--moss-dark)', fontWeight: 700, cursor: 'pointer', fontSize: '12.5px' }}
+                  >
+                    🟢 Good (6d)
                   </button>
-                  <button onClick={() => handleNext(5)} style={{ padding: '10px', borderRadius: '8px', border: '1px solid var(--gold)', background: 'rgba(184,134,59,0.15)', color: 'var(--gold)', fontWeight: 700, cursor: 'pointer' }}>
-                    ⭐️ Easy (5)
+                  <button
+                    onClick={() => handleRateSM2(5)}
+                    style={{ padding: '10px 6px', borderRadius: '8px', border: '1px solid var(--gold)', background: 'rgba(184,134,59,0.15)', color: 'var(--gold)', fontWeight: 700, cursor: 'pointer', fontSize: '12.5px' }}
+                  >
+                    ⭐️ Easy (12d)
                   </button>
                 </div>
               </div>

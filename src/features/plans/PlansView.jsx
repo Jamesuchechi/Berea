@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react';
 import { fetchReadingPlans, getUserPlanProgress, completePlanDay } from '../../services/planService';
+import { calculateCatchUpSchedule, generateAIPersonalizedPlan } from '../../services/readingPlanService';
 
 export default function PlansView() {
   const [plans, setPlans] = useState([]);
   const [activePlanId, setActivePlanId] = useState('');
   const [planProgress, setPlanProgress] = useState(null);
+  const [catchUpInfo, setCatchUpInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAiModal, setShowAiModal] = useState(false);
   const [aiGoal, setAiGoal] = useState('');
   const [aiDays, setAiDays] = useState(30);
+  const [generatingAi, setGeneratingAi] = useState(false);
 
   const loadData = async () => {
     setLoading(true);
@@ -23,6 +26,11 @@ export default function PlansView() {
         setActivePlanId(firstId);
         const prog = await getUserPlanProgress(firstId);
         setPlanProgress(prog);
+
+        if (prog && planData[0]) {
+          const catchUp = calculateCatchUpSchedule(prog.currentDay, planData[0].durationDays, prog.completedDays);
+          setCatchUpInfo(catchUp);
+        }
       }
     } catch (err) {
       setError('Failed to load reading plans. Using local fallback.');
@@ -39,6 +47,12 @@ export default function PlansView() {
     setActivePlanId(planId);
     const prog = await getUserPlanProgress(planId);
     setPlanProgress(prog);
+
+    const targetPlan = plans.find(p => p.id === planId);
+    if (prog && targetPlan) {
+      const catchUp = calculateCatchUpSchedule(prog.currentDay, targetPlan.durationDays, prog.completedDays);
+      setCatchUpInfo(catchUp);
+    }
   };
 
   const handleToggleCompleteDay = async () => {
@@ -49,32 +63,39 @@ export default function PlansView() {
 
     if (result.progress) {
       setPlanProgress(result.progress);
+      const targetPlan = plans.find(p => p.id === activePlanId);
+      if (targetPlan) {
+        const catchUp = calculateCatchUpSchedule(result.progress.currentDay, targetPlan.durationDays, result.progress.completedDays);
+        setCatchUpInfo(catchUp);
+      }
     }
   };
 
   const activePlan = plans.find(p => p.id === activePlanId) || plans[0];
   const percentComplete = activePlan && planProgress
-    ? Math.min(100, Math.round((planProgress.completedDays.length / activePlan.durationDays) * 100))
+    ? Math.min(100, Math.round(((planProgress.completedDays?.length || 0) / activePlan.durationDays) * 100))
     : 0;
 
-  const handleGeneratePlan = (e) => {
+  const handleGeneratePlan = async (e) => {
     e.preventDefault();
     if (!aiGoal.trim()) return;
 
-    const newPlan = {
-      id: `ai-${Date.now()}`,
-      slug: `ai-${Date.now()}`,
-      title: `${aiDays}-Day AI Plan: ${aiGoal}`,
-      description: `Custom AI-generated reading schedule tailored for ${aiDays} days on "${aiGoal}".`,
-      durationDays: aiDays,
-      kind: 'ai_generated',
-      isPublic: true,
-    };
+    setGeneratingAi(true);
+    try {
+      const newPlan = await generateAIPersonalizedPlan({
+        topic: aiGoal,
+        durationDays: aiDays,
+      });
 
-    setPlans([newPlan, ...plans]);
-    setActivePlanId(newPlan.id);
-    setShowAiModal(false);
-    setAiGoal('');
+      setPlans([newPlan, ...plans]);
+      setActivePlanId(newPlan.id);
+      setShowAiModal(false);
+      setAiGoal('');
+    } catch {
+      setError('Failed to generate AI plan. Used local fallback template.');
+    } finally {
+      setGeneratingAi(false);
+    }
   };
 
   return (
@@ -85,7 +106,7 @@ export default function PlansView() {
           <div>
             <h2 style={{ fontSize: '26px', color: 'var(--ink)', fontWeight: 600 }}>Guided Reading Plans</h2>
             <p style={{ fontSize: '14px', color: 'var(--ink-soft)', marginTop: '4px' }}>
-              Structured journeys through Scripture, Deuterocanon, and Church history.
+              Structured journeys through Scripture, Deuterocanon, and Church history with AI generation & catch-up logic.
             </p>
           </div>
 
@@ -105,6 +126,18 @@ export default function PlansView() {
             <button onClick={loadData} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '4px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}>
               Retry
             </button>
+          </div>
+        )}
+
+        {/* Catch-Up Schedule Banner */}
+        {catchUpInfo && catchUpInfo.isBehind && (
+          <div style={{ background: 'rgba(245, 158, 11, 0.12)', border: '1.5px solid var(--gold)', borderRadius: '12px', padding: '14px 18px', marginBottom: '24px' }}>
+            <div style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--gold)', marginBottom: '4px' }}>
+              {catchUpInfo.statusText}
+            </div>
+            <div style={{ fontSize: '12.5px', color: 'var(--ink-soft)' }}>
+              Missed Days: {catchUpInfo.missedCount} | Recommended Pace: {catchUpInfo.recommendedDailyReadings} readings/day
+            </div>
           </div>
         )}
 
@@ -152,8 +185,8 @@ export default function PlansView() {
               <button type="button" className="btn btn-ghost" onClick={() => setShowAiModal(false)} style={{ fontSize: '13px' }}>
                 Cancel
               </button>
-              <button type="submit" className="btn btn-primary" style={{ fontSize: '13px', padding: '8px 18px' }}>
-                Build AI Schedule
+              <button type="submit" disabled={generatingAi} className="btn btn-primary" style={{ fontSize: '13px', padding: '8px 18px' }}>
+                {generatingAi ? 'Generating Plan...' : 'Build AI Schedule'}
               </button>
             </div>
           </form>

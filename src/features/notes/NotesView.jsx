@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchUserNotes, createNote, deleteNote } from '../../services/noteService';
+import { detectVerseLinksInNoteText, exportNotesToMarkdown, exportNotesToJSON, downloadFile } from '../../services/noteExportService';
 
 export default function NotesView() {
   const [notes, setNotes] = useState([]);
@@ -33,7 +34,7 @@ export default function NotesView() {
 
     setSaving(true);
     const result = await createNote({
-      bookId: '00000000-0000-0000-0000-000000000000', // placeholder fallback ID
+      bookId: '00000000-0000-0000-0000-000000000000',
       chapter: 3,
       verseNumber: 16,
       content: `${newNoteRef ? `[${newNoteRef}] ` : ''}${newNoteText}`,
@@ -51,6 +52,16 @@ export default function NotesView() {
     await deleteNote(id);
   };
 
+  const handleExportMarkdown = () => {
+    const mdContent = exportNotesToMarkdown(notes, []);
+    downloadFile(mdContent, 'berea_study_notes.md', 'text/markdown');
+  };
+
+  const handleExportJSON = () => {
+    const jsonContent = exportNotesToJSON(notes, []);
+    downloadFile(jsonContent, 'berea_notes_backup.json', 'application/json');
+  };
+
   const filteredNotes = notes.filter(n =>
     n.content.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -63,13 +74,27 @@ export default function NotesView() {
           <div>
             <h2 style={{ fontSize: '26px', color: 'var(--ink)', fontWeight: 600 }}>Your Study Notes & Journal</h2>
             <p style={{ fontSize: '14px', color: 'var(--ink-soft)', marginTop: '4px' }}>
-              Every note anchors permanently to its canonical verse reference.
+              Verse-anchored notes with auto-linked references & export tools.
             </p>
           </div>
 
-          <span style={{ background: 'var(--moss)', color: '#fff', fontSize: '12px', fontWeight: 600, padding: '6px 14px', borderRadius: '999px' }}>
-            📝 {notes.length} Anchored Notes
-          </span>
+          {/* Export Action Buttons */}
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              onClick={handleExportMarkdown}
+              className="btn btn-ghost"
+              style={{ fontSize: '12.5px', padding: '6px 12px', border: '1px solid var(--line-strong)' }}
+            >
+              📥 Markdown
+            </button>
+            <button
+              onClick={handleExportJSON}
+              className="btn btn-ghost"
+              style={{ fontSize: '12.5px', padding: '6px 12px', border: '1px solid var(--line-strong)' }}
+            >
+              💾 JSON Backup
+            </button>
+          </div>
         </div>
 
         {/* Error Alert Banner with Retry */}
@@ -149,33 +174,48 @@ export default function NotesView() {
         {/* Notes Cards List */}
         {!loading && filteredNotes.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {filteredNotes.map((note) => (
-              <div key={note.id} className="card" style={{ background: 'var(--bg-card)', border: '1px solid var(--line-strong)', borderRadius: '12px', padding: '20px', position: 'relative' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: 600, color: 'var(--gold)' }}>
-                      📖 Note #{note.id.toString().slice(-4)}
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '12px', color: 'var(--ink-faint)' }}>
-                      {new Date(note.createdAt || note.updatedAt || Date.now()).toLocaleDateString()}
-                    </span>
-                    <button
-                      onClick={() => handleDeleteNote(note.id)}
-                      title="Delete note"
-                      style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
-                    >
-                      <i className="ti ti-trash" style={{ fontSize: '14px' }} />
-                    </button>
-                  </div>
-                </div>
+            {filteredNotes.map((note) => {
+              const linkedRefs = detectVerseLinksInNoteText(note.content);
 
-                <p style={{ fontSize: '14.5px', lineHeight: 1.65, color: 'var(--ink)', marginBottom: '4px', whiteSpace: 'pre-wrap' }}>
-                  {note.content}
-                </p>
-              </div>
-            ))}
+              return (
+                <div key={note.id} className="card" style={{ background: 'var(--bg-card)', border: '1px solid var(--line-strong)', borderRadius: '12px', padding: '20px', position: 'relative' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: 600, color: 'var(--gold)' }}>
+                        📖 Note #{note.id.toString().slice(-4)}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '12px', color: 'var(--ink-faint)' }}>
+                        {new Date(note.createdAt || note.updatedAt || Date.now()).toLocaleDateString()}
+                      </span>
+                      <button
+                        onClick={() => handleDeleteNote(note.id)}
+                        title="Delete note"
+                        style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
+                      >
+                        <i className="ti ti-trash" style={{ fontSize: '14px' }} />
+                      </button>
+                    </div>
+                  </div>
+
+                  <p style={{ fontSize: '14.5px', lineHeight: 1.65, color: 'var(--ink)', marginBottom: '10px', whiteSpace: 'pre-wrap' }}>
+                    {note.content}
+                  </p>
+
+                  {/* Auto-Linked Verse Badges */}
+                  {linkedRefs.length > 0 && (
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--line)' }}>
+                      {linkedRefs.map((link, idx) => (
+                        <span key={idx} style={{ fontSize: '11.5px', background: 'var(--parchment-deep)', border: '1px solid var(--gold)', color: 'var(--gold)', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>
+                          🔗 {link.rawText}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
 

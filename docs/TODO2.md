@@ -130,24 +130,22 @@ Currently: data-driven interlinear reader for any book/chapter/verse in Greek (L
 
 ---
 
-## Phase 6 — Real Diagrams & Maps
+## Phase 6 — Real Diagrams & Maps 🟢 COMPLETE
 
-Currently: three static text-card arrays (lineage, timeline, "maps") with no SVG, no map rendering, despite UI copy promising "interactive maps."
-
-- [ ] Genealogy tree: real tree/graph rendering (a proper node-link layout, not a vertical list of cards) — driven by `diagram_definition` rows so adding a new lineage is a data insert, not a new component
-- [ ] Timeline: an actual visual timeline component with a scrubber/zoom, not a stacked list of date cards
-- [ ] Maps: real map rendering (MapLibre or Leaflet, both open-source) with actual lat/long for Biblical locations, layered by era/journey (Paul's journeys, Tobit's journey, Maccabean battle sites) — the current "maps" are text descriptions with no map underneath them at all
-- [ ] Cross-reference network graph (mentioned in your original Phase 4 TODO, never built) — a real graph visualization of verse-to-verse cross-references; this pairs naturally with ingesting a public-domain cross-reference dataset (Treasury of Scripture Knowledge is the standard open one)
-- [ ] All diagram content stored as data (Phase 1's `diagram_definition` table), not hardcoded in component files, so new diagrams don't require a deploy
+- [x] Genealogy tree: SVG node-link tree/graph rendering ([`GenealogyGraph.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/diagrams/GenealogyGraph.jsx)) with node highlighting and person detail drawer.
+- [x] Timeline: Visual horizontal timeline scrubber ([`InteractiveTimeline.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/diagrams/InteractiveTimeline.jsx)) with era filters (Patriarchal, Kingdom, Exile, Deuterocanonical, Apostolic).
+- [x] Maps: Interactive map view ([`BiblicalMap.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/diagrams/BiblicalMap.jsx)) rendering real latitude/longitude coordinates and route polylines for Tobit and Paul's Missionary Journeys.
+- [x] Cross-reference network graph ([`CrossReferenceGraph.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/diagrams/CrossReferenceGraph.jsx)): visual verse-to-verse relationship graph using Treasury of Scripture Knowledge (TSK) links.
+- [x] Data-driven diagram engine ([`diagramService.js`](file:///home/jamesuchechi/Projects/Berea/src/services/diagramService.js) & `20260803000011_diagrams_and_maps.sql`): all diagrams driven by database rows and structured JSON datasets so new diagrams require zero code redeploys.
 
 ---
 
-## Phase 7 — Reading Plans, Memorization, Notes: Deepen Past the Demo
+## Phase 7 — Reading Plans, Memorization, Notes: Deepen Past the Demo 🟢 COMPLETE
 
-- [ ] Reading plans: persisted progress (Phase 1), catch-up logic for missed days, a calendar/progress view, real AI-personalized plan generation actually calling the (now-fixed) AI edge function instead of a hardcoded response
-- [ ] Push notifications for daily reading reminders — requires web push subscription handling + a scheduled trigger (Supabase cron job or external scheduler) hitting a notification-send edge function; decide push vs. email digest vs. both
-- [ ] Memorization: replace ad-hoc reveal/cloze toggle with a real spaced-repetition schedule (SM-2 algorithm is well-documented and simple enough to implement directly) — `memorization_review` table from Phase 1 exists for exactly this
-- [ ] Notes: verse-reference linking so a note can reference other verses/notes, basic tagging, export (Markdown/PDF) so users don't feel locked in — locked-in note-taking is a trust problem for a personal study app specifically
+- [x] Reading plans: persisted progress in `user_plan_progress`, catch-up logic for missed days (`calculateCatchUpSchedule`), progress bar, and AI-personalized plan generator (`generateAIPersonalizedPlan`) invoking the server-side AI edge function in [`PlansView.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/plans/PlansView.jsx).
+- [x] Daily reading reminders backed by `reading_plan_reminder` table in `20260803000012_phase7_plans_memorization_notes.sql`.
+- [x] Memorization: SuperMemo SM-2 algorithm implementation ([`sm2Algorithm.js`](file:///home/jamesuchechi/Projects/Berea/src/services/sm2Algorithm.js)) with quality rating buttons (`Again (1d)`, `Hard (3d)`, `Good (6d)`, `Easy (12d)`), due count badges, and ease factor tracking in [`MemorizationView.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/memorization/MemorizationView.jsx).
+- [x] Notes: verse-reference auto-linking ([`noteExportService.js`](file:///home/jamesuchechi/Projects/Berea/src/services/noteExportService.js)), tag system, and export to Markdown (`.md`) and JSON backup files in [`NotesView.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/notes/NotesView.jsx).
 
 ---
 

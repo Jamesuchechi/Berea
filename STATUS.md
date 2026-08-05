@@ -108,15 +108,38 @@
 
 ---
 
-## Phase 6 — Real Diagrams & Maps 🔴 NOT STARTED
+## Phase 6 — Real Diagrams & Maps 🟢 COMPLETE
 
-Genealogy and timeline text cards exist. No SVG graph layout engine, MapLibre/Leaflet maps, or dynamic diagram definitions yet.
+**Session:** 2026-08-05
+
+**Completed:**
+- ✅ Created SQL migration [`20260803000011_diagrams_and_maps.sql`](file:///home/jamesuchechi/Projects/Berea/supabase/migrations/20260803000011_diagrams_and_maps.sql) (schema and RLS policies for `diagram_definition` table).
+- ✅ Created structured JSON graph datasets in [`diagramData.js`](file:///home/jamesuchechi/Projects/Berea/src/data/diagramData.js) for Genealogy, Timeline, Map coordinates/routes, and Cross-Reference network.
+- ✅ Implemented [`diagramService.js`](file:///home/jamesuchechi/Projects/Berea/src/services/diagramService.js) for fetching diagram definitions from Supabase with offline fallback.
+- ✅ Created [`GenealogyGraph.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/diagrams/GenealogyGraph.jsx) (interactive SVG node-link tree graph with person bio drawer).
+- ✅ Created [`InteractiveTimeline.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/diagrams/InteractiveTimeline.jsx) (visual horizontal timeline scrubber with era filters).
+- ✅ Created [`BiblicalMap.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/diagrams/BiblicalMap.jsx) (interactive map rendering real lat/long coordinates & route polylines).
+- ✅ Created [`CrossReferenceGraph.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/diagrams/CrossReferenceGraph.jsx) (Treasury of Scripture Knowledge verse relationship network graph).
+- ✅ Rewrote [`DiagramsView.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/diagrams/DiagramsView.jsx) with category filter tabs (`All`, `Genealogy Trees`, `Timelines`, `Interactive Maps`, `Cross-Ref Network`), loading skeleton, and error handling.
+- ✅ Created test suite [`src/services/__tests__/diagramService.test.js`](file:///home/jamesuchechi/Projects/Berea/src/services/__tests__/diagramService.test.js).
+- ✅ `npm run build` succeeds cleanly (120 modules transformed).
 
 ---
 
-## Phase 7 — Reading Plans, Memorization, Notes: Deepen Past the Demo 🔴 NOT STARTED
+## Phase 7 — Reading Plans, Memorization, Notes: Deepen Past the Demo 🟢 COMPLETE
 
-Phase 1 persistence landed. Catch-up logic, web push notifications, and export options pending.
+**Session:** 2026-08-05
+
+**Completed:**
+- ✅ Created SQL migration [`20260803000012_phase7_plans_memorization_notes.sql`](file:///home/jamesuchechi/Projects/Berea/supabase/migrations/20260803000012_phase7_plans_memorization_notes.sql) (SM-2 parameters for `memorization_item`, `tags` and `linked_references` for `user_note`, and `reading_plan_reminder` table).
+- ✅ Implemented SuperMemo SM-2 algorithm in [`sm2Algorithm.js`](file:///home/jamesuchechi/Projects/Berea/src/services/sm2Algorithm.js) calculating interval days, ease factor (EF), and repetition count per user quality score.
+- ✅ Implemented [`readingPlanService.js`](file:///home/jamesuchechi/Projects/Berea/src/services/readingPlanService.js) supporting catch-up schedule calculation for missed days and AI plan generation via Edge Function.
+- ✅ Implemented [`noteExportService.js`](file:///home/jamesuchechi/Projects/Berea/src/services/noteExportService.js) detecting verse reference links (`John 3:16`, `Tobit 1:3`) in note text and exporting notes to Markdown (`.md`) and JSON backup.
+- ✅ Updated [`MemorizationView.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/memorization/MemorizationView.jsx) with SM-2 quality rating buttons (`Again (1d)`, `Hard (3d)`, `Good (6d)`, `Easy (12d)`), due count badges, and ease factor tracking.
+- ✅ Updated [`PlansView.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/plans/PlansView.jsx) with catch-up warning banner and AI Plan generator modal.
+- ✅ Updated [`NotesView.jsx`](file:///home/jamesuchechi/Projects/Berea/src/features/notes/NotesView.jsx) with Markdown export and auto-linked verse reference badges.
+- ✅ Created unit test suite [`src/services/__tests__/phase7Services.test.js`](file:///home/jamesuchechi/Projects/Berea/src/services/__tests__/phase7Services.test.js) (8 tests passing 100%).
+- ✅ `npm run build` succeeds cleanly (123 modules transformed).
 
 ---
 
